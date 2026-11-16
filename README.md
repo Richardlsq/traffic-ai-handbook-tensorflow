@@ -1,4 +1,4 @@
-# 人工智能与交通大数据实战课程代码手册 · TensorFlow 版
+# 人工智能与交通大数据实战课程手册 · TensorFlow 版
 
 本手册源自北京交通大学在中国大学 MOOC 开设的《人工智能与交通大数据实战》。感谢张金雷老师及课程团队提供原课程讲解、课件与教学案例。Shiqi Li 完成手册整理和后续开发。
 
@@ -6,9 +6,9 @@
 
 [原版手册仓库](https://github.com/Richardlsq/traffic-ai-handbook) · [原课程](https://www.icourse163.org/course/NJTU-1471607173) · [张金雷的 GitHub](https://github.com/JinleiZhangBJTU) · [Shiqi Li 的 GitHub](https://github.com/Richardlsq)
 
-打开 [课程代码手册](人工智能与交通大数据实战-课程代码手册.html) 即可离线浏览。整包包含 Python 基础、TensorFlow 基础、反向传播、循环神经网络、卷积神经网络、图卷积神经网络和轨道交通案例。
+打开 [课程手册](人工智能与交通大数据实战-课程代码手册.html) 即可离线学习。正文以张金雷老师的《Python 基础与进阶》《人工智能基础模型简介实战》《人工智能在轨道交通刷卡数据的应用综述及实战》课件为主线。按章节阅读概念、课件例题、图表和自测，再展开配套实验运行 Notebook。手册列有课件页码。
 
-## 第一次动手
+## 配套实验环境
 
 1. 完整解压下载包，保留目录结构。在解压后的课程目录打开 PowerShell。
 2. 准备 Windows x64 的 Python 3.12，用 `py -3.12 -V` 确认解释器可用。
@@ -24,7 +24,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\课程初始化.ps1 -S
 
 整包里的 `解压代码/` 是整理并验证过的教学代码，包含 LSTM 测试与 MSE 计算、深圳路速与地铁客流模型验证流程的修正。
 
-各章的原理与可复制演示可直接在 Notebook 单元格运行。每个演示旁列出预期结果、配套源码及相关课件页码。
+各章的配套实验提供可复制的示例、命令和检查结果。课程教学内容可直接在网页阅读，实验所用的 Notebook、训练代码和数据在完整 ZIP 内。
 
 在 PowerShell 中从对应 Notebook 的目录启动 JupyterLab，内核选择 **Python (Traffic AI · TensorFlow)**。手册的「环境与运行入口」列出全部 Notebook 路径；完整训练命令及预期结果分别列在各章。已有环境可以执行：
 

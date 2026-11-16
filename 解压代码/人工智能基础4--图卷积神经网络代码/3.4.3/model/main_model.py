@@ -1,28 +1,34 @@
-import torch
-from torch import nn
-import torch.nn.functional as F
+from math import sqrt
+
+import tensorflow as tf
+
 from model.GCN_layers import GraphConvolution
 
-class Model(nn.Module):
-	def __init__(self, time_lag, pre_len, station_num, device):
-		super().__init__()
-		self.time_lag = time_lag
-		self.pre_len = pre_len
-		self.station_num = station_num
-		self.device = device
-		self.GCN1 = GraphConvolution(in_features=self.time_lag , out_features=self.time_lag).to(self.device)
-		self.GCN2 = GraphConvolution(in_features=self.time_lag , out_features= self.time_lag).to(self.device)
-		self.linear1 = nn.Linear(in_features= self.time_lag * self.station_num, out_features=1024).to(self.device)
-		self.linear2 = nn.Linear(in_features=1024, out_features=512).to(self.device)
-		self.linear3 = nn.Linear(in_features=512, out_features=self.station_num * self.pre_len).to(self.device)
-	def forward(self, speed, adj):
-		speed = speed.to(self.device)  #[32,276,10]
-		adj = adj.to(self.device)
-		speed = self.GCN1(x=speed, adj = adj)  # (32, 276, 10)
-		output = self.GCN2(x = speed, adj = adj)  #[32, 276, 10]
-		output = output.reshape(output.size()[0], -1)  # (32, 276*10)
-		output = F.relu(self.linear1(output))  # (32, 1024)
-		output = F.relu(self.linear2(output))  # (32, 512)
-		output = self.linear3(output)  # (32, 276*pre_len)
-		output = output.reshape(output.size()[0], self.station_num, self.pre_len)  # ( 64, 276, pre_len)
-		return output
+
+def _dense(in_features, out_features, activation=None):
+    bound = 1.0 / sqrt(in_features)
+    return tf.keras.layers.Dense(
+        out_features, activation=activation,
+        kernel_initializer=tf.keras.initializers.RandomUniform(-bound, bound),
+        bias_initializer=tf.keras.initializers.RandomUniform(-bound, bound),
+    )
+
+
+class Model(tf.keras.Model):
+    def __init__(self, time_lag, pre_len, station_num):
+        super().__init__()
+        self.time_lag = time_lag
+        self.pre_len = pre_len
+        self.station_num = station_num
+        self.GCN1 = GraphConvolution(time_lag, time_lag)
+        self.GCN2 = GraphConvolution(time_lag, time_lag)
+        self.flatten = tf.keras.layers.Flatten()
+        self.linear1 = _dense(time_lag * station_num, 1024, 'relu')
+        self.linear2 = _dense(1024, 512, 'relu')
+        self.linear3 = _dense(512, station_num * pre_len)
+
+    def call(self, speed, adj, training=False):
+        speed = self.GCN1(speed, adj)
+        features = self.flatten(self.GCN2(speed, adj))
+        features = self.linear2(self.linear1(features))
+        return tf.reshape(self.linear3(features), (-1, self.station_num, self.pre_len))

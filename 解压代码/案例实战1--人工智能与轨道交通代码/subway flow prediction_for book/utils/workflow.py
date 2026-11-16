@@ -7,11 +7,14 @@ from math import isfinite
 from pathlib import Path
 
 import numpy as np
-import torch
+import tensorflow as tf
+from tensorboard.compat.proto.event_pb2 import Event
+from tensorboard.compat.proto.summary_pb2 import Summary
+from tensorboard.summary.writer.record_writer import RecordWriter
 
 from data.get_dataloader import get_inflow_dataloader, get_outflow_dataloader
 from model.main_model import Model
-from utils.earlystopping import EarlyStopping
+from utils.earlystopping import EarlyStopping, load_checkpoint_metadata
 from utils.metrics import Metrics
 from utils.utils import GetLaplacian
 
@@ -25,12 +28,20 @@ DEFAULT_EPOCHS = 1000
 
 
 def _device(name):
-    if name == 'auto':
-        name = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    device = torch.device(name)
-    if device.type == 'cpu':
-        torch.set_num_threads(min(torch.get_num_threads(), 4))
-    return device
+    kind, _, index_text = name.lower().lstrip('/').partition(':')
+    if kind == 'auto':
+        kind = 'gpu' if tf.config.list_physical_devices('GPU') else 'cpu'
+    if kind == 'cuda':
+        kind = 'gpu'
+    if kind not in ('cpu', 'gpu') or (index_text and not index_text.isdecimal()):
+        raise ValueError('Use --device auto, cpu, gpu, or cuda:<index>')
+    index = int(index_text or 0)
+    if index >= len(tf.config.list_physical_devices(kind.upper())):
+        raise ValueError(f'TensorFlow device {kind}:{index} is unavailable')
+    if kind == 'cpu':
+        tf.config.threading.set_intra_op_parallelism_threads(4)
+        tf.config.threading.set_inter_op_parallelism_threads(2)
+    return f'/{kind.upper()}:{index}'
 
 
 def _config(holdout_days, batch_size):
@@ -51,8 +62,11 @@ def _setup(config, device, *, inflow_only=False):
             if not np.array_equal(flow_in.dataset.target_indices, flow_out.dataset.target_indices):
                 raise ValueError('Inflow and outflow windows cover different time indices')
     adjacency = GetLaplacian(np.loadtxt(ADJACENCY, delimiter=',')).get_normalized_adj(NODES)
-    graph = torch.as_tensor(adjacency, device=device)
-    model = Model(config['time_lag'], config['pre_len'], NODES, device).to(device)
+    with tf.device(device):
+        graph = tf.convert_to_tensor(adjacency)
+        model = Model(config['time_lag'], config['pre_len'], NODES)
+        sample = tf.zeros((1, NODES, 3 * config['time_lag']))
+        model(sample, None if inflow_only else sample, graph)
     return splits, (maximum, minimum), graph, model
 
 
@@ -65,38 +79,45 @@ def _data_hashes(*, inflow_only=False):
     return fingerprints
 
 
-def _batches(loaders, device):
+def _batches(loaders):
     for batches in zip(*loaders, strict=True):
         inflow = batches[0]
-        outflow = batches[1][0].to(device) if len(batches) == 2 else None
-        yield (inflow[0].to(device), outflow), inflow[1].to(device), inflow[2:]
+        outflow = batches[1][0] if len(batches) == 2 else None
+        yield (inflow[0], outflow), inflow[1], inflow[2:]
 
 
-def _train_epoch(model, loaders, graph, optimizer):
-    model.train()
-    sum_squared = torch.zeros((), device=graph.device)
+def _make_train_step(model, graph, optimizer):
+    @tf.function(reduce_retracing=True)
+    def train_step(features, target):
+        with tf.device(graph.device), tf.GradientTape() as tape:
+            prediction = model(*features, graph, training=True)
+            error = tf.reduce_sum(tf.math.squared_difference(prediction, target))
+            loss = error / tf.cast(tf.size(target), error.dtype)
+        gradients = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        return error
+    return train_step
+
+
+def _train_epoch(train_step, loaders):
+    sum_squared = 0.0
     count = 0
-    for features, target, _ in _batches(loaders, graph.device):
-        optimizer.zero_grad(set_to_none=True)
-        prediction = model(*features, graph)
-        error = torch.nn.functional.mse_loss(prediction, target, reduction='sum')
-        (error / target.numel()).backward()
-        optimizer.step()
-        sum_squared += error.detach()
-        count += target.numel()
-    return sum_squared.item() / count
+    for features, target, _ in _batches(loaders):
+        sum_squared += float(train_step(features, target).numpy())
+        count += int(tf.size(target))
+    return sum_squared / count
 
 
-@torch.inference_mode()
 def _validation_mse(model, validation_loaders, graph):
-    model.eval()
-    sum_squared = torch.zeros((), device=graph.device, dtype=torch.float64)
+    sum_squared = 0.0
     count = 0
-    for features, target, _ in _batches(validation_loaders, graph.device):
-        prediction = model(*features, graph)
-        sum_squared += (prediction.to(torch.float64) - target).square().sum()
-        count += target.numel()
-    return sum_squared.item() / count
+    with tf.device(graph.device):
+        for features, target, _ in _batches(validation_loaders):
+            prediction = model(*features, graph, training=False)
+            error = tf.math.squared_difference(tf.cast(prediction, tf.float64), tf.cast(target, tf.float64))
+            sum_squared += float(tf.reduce_sum(error).numpy())
+            count += int(tf.size(target))
+    return sum_squared / count
 
 
 def _metrics(actual, forecast):
@@ -108,22 +129,22 @@ def _metrics(actual, forecast):
             'wmape': wmape if isfinite(wmape) else None}
 
 
-@torch.inference_mode()
 def _evaluate(model, loaders, graph, scaling, output, checkpoint_epoch):
-    model.eval()
     maximum, minimum = scaling
     span = maximum - minimum or 1.0
     predictions, observations, reference = [], [], []
-    sum_squared = torch.zeros((), device=graph.device, dtype=torch.float64)
+    sum_squared = 0.0
     count = 0
-    for features, target, (original,) in _batches(loaders, graph.device):
-        prediction = model(*features, graph)
-        sum_squared += (prediction.to(torch.float64) - target).square().sum()
-        count += target.numel()
-        predictions.append(prediction.cpu().numpy().astype(np.float64) * span + minimum)
-        observations.append(original.numpy())
-        last = features[0][:, :, -1:].cpu().numpy().astype(np.float64) * span + minimum
-        reference.append(np.broadcast_to(last, original.shape))
+    with tf.device(graph.device):
+        for features, target, (original,) in _batches(loaders):
+            prediction = model(*features, graph, training=False).numpy().astype(np.float64)
+            normalized = target.numpy()
+            sum_squared += np.square(prediction - normalized).sum()
+            count += normalized.size
+            predictions.append(prediction * span + minimum)
+            observations.append(original.numpy())
+            last = features[0][:, :, -1:].numpy().astype(np.float64) * span + minimum
+            reference.append(np.broadcast_to(last, original.shape))
     predicted = np.maximum(np.concatenate(predictions), 0.0)
     actual = np.concatenate(observations)
     persistence = np.concatenate(reference)
@@ -132,7 +153,7 @@ def _evaluate(model, loaders, graph, scaling, output, checkpoint_epoch):
         'checkpoint_epoch': checkpoint_epoch, 'split_metadata_verified': checkpoint_epoch is not None,
         'inputs': ['inflow'] if len(loaders) == 1 else ['inflow', 'outflow'],
         'samples': len(indices), 'first_target_index': int(indices[0]), 'last_target_index': int(indices[-1]),
-        'normalized_mse': sum_squared.item() / count, 'model': _metrics(actual, predicted),
+        'normalized_mse': float(sum_squared / count), 'model': _metrics(actual, predicted),
         'last_observation': _metrics(actual, persistence),
     }
     output.mkdir(parents=True, exist_ok=True)
@@ -159,19 +180,27 @@ def train_main():
     if min(args.epochs, args.patience, args.batch_size, args.holdout_days) < 1 or not isfinite(args.lr) or args.lr <= 0:
         parser.error('epochs, patience, lr, batch size and holdout days must be positive')
 
-    torch.manual_seed(args.seed)
     device = _device(args.device)
+    tf.keras.utils.set_random_seed(args.seed)
     config = _config(args.holdout_days, args.batch_size)
     (train, validation, test), scaling, graph, model = _setup(config, device, inflow_only=args.inflow_only)
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    with tf.device(device):
+        optimizer = tf.keras.optimizers.Adam(learning_rate=args.lr, epsilon=1e-8)
+    train_step = _make_train_step(model, graph, optimizer)
     output = args.output_dir or PROJECT / 'outputs' / datetime.now().strftime('%Y%m%d_%H%M%S_%f')
     output.mkdir(parents=True, exist_ok=False)
-    stopper = EarlyStopping(patience=args.patience, checkpoint_name='best.pth')
+    stopper = EarlyStopping(patience=args.patience, checkpoint_name='best.weights.h5')
     fingerprints = _data_hashes(inflow_only=args.inflow_only)
     writer = None
     if args.tensorboard:
-        from torch.utils.tensorboard import SummaryWriter
-        writer = SummaryWriter(log_dir=str(output / 'tensorboard'))
+        log_dir = output / 'tensorboard'
+        log_dir.mkdir()
+        timestamp = datetime.now().timestamp()
+        log_path = log_dir / f'events.out.tfevents.{int(timestamp)}.course'
+        # Python file I/O also supports non-ASCII paths on native Windows.
+        writer = RecordWriter(log_path.open('wb'))
+        writer.write(Event(wall_time=timestamp, file_version='brain.Event:2').SerializeToString())
+        writer.flush()
 
     splits = {}
     for name, loaders in zip(('train', 'validation', 'test'), (train, validation, test), strict=True):
@@ -183,10 +212,10 @@ def train_main():
             history = csv.writer(stream)
             history.writerow(('epoch', 'train_mse', 'validation_mse'))
             for epoch in range(1, args.epochs + 1):
-                train_mse = _train_epoch(model, train, graph, optimizer)
+                train_mse = _train_epoch(train_step, train)
                 val_mse = _validation_mse(model, validation, graph)
                 payload = {
-                    'model_state_dict': model.state_dict(), 'config': config, 'splits': splits, 'data_sha256': fingerprints,
+                    'config': config, 'splits': splits, 'data_sha256': fingerprints,
                     'graph_project': 'metro', 'seed': args.seed, 'epoch': epoch, 'validation_mse': val_mse,
                     'inflow_only': args.inflow_only,
                     'maximum': scaling[0], 'minimum': scaling[1],
@@ -195,8 +224,13 @@ def train_main():
                 history.writerow((epoch, train_mse, val_mse))
                 stream.flush()
                 if writer:
-                    writer.add_scalar('loss_train', train_mse, epoch)
-                    writer.add_scalar('loss_validation', val_mse, epoch)
+                    summary = Summary(value=[
+                        Summary.Value(tag='loss_train', simple_value=train_mse),
+                        Summary.Value(tag='loss_validation', simple_value=val_mse),
+                    ])
+                    event = Event(wall_time=datetime.now().timestamp(), step=epoch, summary=summary)
+                    writer.write(event.SerializeToString())
+                    writer.flush()
                 print(f'Epoch {epoch}: train MSE={train_mse:.8f}, validation MSE={val_mse:.8f}', flush=True)
                 if stopper.early_stop:
                     break
@@ -204,7 +238,7 @@ def train_main():
         if writer:
             writer.close()
     print(f'Best epoch: {stopper.best_epoch}; validation MSE: {stopper.val_loss_min:.8f}', flush=True)
-    print(f'Checkpoint: {output / "best.pth"}', flush=True)
+    print(f'Checkpoint: {output / "best.weights.h5"}', flush=True)
 
 
 def predict_main():
@@ -214,7 +248,7 @@ def predict_main():
     parser.add_argument('--device', default='auto')
     args = parser.parse_args()
     device = _device(args.device)
-    checkpoint = torch.load(args.checkpoint, map_location='cpu', weights_only=True)
+    checkpoint = load_checkpoint_metadata(args.checkpoint)
     if checkpoint.get('graph_project') != 'metro':
         parser.error('Choose a checkpoint produced by this project')
     inflow_only = checkpoint.get('inflow_only', False)
@@ -227,7 +261,7 @@ def predict_main():
     saved_test = checkpoint['splits']['test']
     if (len(test_indices), test_indices[0], test_indices[-1]) != (saved_test['samples'], saved_test['start'], saved_test['end']):
         raise ValueError('The test split differs from the saved training run')
-    model.load_state_dict(checkpoint['model_state_dict'])
+    model.load_weights(args.checkpoint)
     val_mse = _validation_mse(model, validation, graph)
     print(f'Checkpoint epoch {checkpoint["epoch"]}: saved validation MSE={checkpoint["validation_mse"]:.8f}, '
           f'recomputed validation MSE={val_mse:.8f}', flush=True)

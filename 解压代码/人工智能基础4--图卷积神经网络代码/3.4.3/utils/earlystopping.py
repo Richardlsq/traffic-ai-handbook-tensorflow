@@ -1,7 +1,21 @@
+import json
 from math import isfinite
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
-import torch
+import h5py
+
+
+METADATA_ATTRIBUTE = 'course_metadata'
+
+
+def load_checkpoint_metadata(path):
+    if not path.name.endswith('.weights.h5'):
+        raise ValueError('Choose a .weights.h5 checkpoint trained in this edition.')
+    with h5py.File(path, 'r') as checkpoint:
+        if METADATA_ATTRIBUTE not in checkpoint.attrs:
+            raise ValueError('This checkpoint has no course training metadata.')
+        return json.loads(checkpoint.attrs[METADATA_ATTRIBUTE])
 
 
 class EarlyStopping:
@@ -14,22 +28,25 @@ class EarlyStopping:
         self.val_loss_min = float('inf')
         self.best_epoch = None
 
-    def __call__(self, val_loss, model_dict, model, epoch, save_path):
+    def __call__(self, val_loss, metadata, model, epoch, save_path):
         if not isfinite(val_loss):
             raise ValueError(f'Non-finite validation loss at epoch {epoch}: {val_loss}')
         if val_loss < self.val_loss_min:
-            self.save_checkpoint(val_loss, model_dict, model, epoch, save_path)
+            self.save_checkpoint(val_loss, metadata, model, epoch, save_path)
             self.counter = 0
         else:
             self.counter += 1
             self.early_stop = self.counter >= self.patience
 
-    def save_checkpoint(self, val_loss, model_dict, model, epoch, save_path):
-        filename = self.checkpoint_name or f'model_dict_checkpoint_{epoch}_{val_loss:.8f}.pth'
+    def save_checkpoint(self, val_loss, metadata, model, epoch, save_path):
+        filename = self.checkpoint_name or f'model_checkpoint_{epoch}_{val_loss:.8f}.weights.h5'
         location = Path(save_path) / filename
-        temporary = location.with_suffix('.tmp')
-        torch.save(model_dict, temporary)
-        temporary.replace(location)
+        with TemporaryDirectory(dir=location.parent, prefix='.checkpoint-') as directory:
+            temporary = Path(directory) / filename
+            model.save_weights(temporary)
+            with h5py.File(temporary, 'a') as checkpoint:
+                checkpoint.attrs[METADATA_ATTRIBUTE] = json.dumps(metadata, allow_nan=False)
+            temporary.replace(location)
         if self.verbose:
             print(f'Validation MSE improved from {self.val_loss_min:.8f} to {val_loss:.8f}', flush=True)
         self.val_loss_min = val_loss

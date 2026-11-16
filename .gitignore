@@ -9,7 +9,7 @@ outputs/
 generated/
 *.pyc
 *.pyo
-*.pth
+*.weights.h5
 *.npz
 .DS_Store
 Thumbs.db

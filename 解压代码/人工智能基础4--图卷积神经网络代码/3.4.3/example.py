@@ -6,10 +6,9 @@ from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import numpy as np
 import pandas as pd
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import tensorflow as tf
 from networkx.algorithms.community.modularity_max import \
     greedy_modularity_communities
 
@@ -39,7 +38,7 @@ def draw_graph(
         plt.ylabel(axis_labels[1])
 
 
-def create_graph() -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, nx.Graph]:
+def create_graph() -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, nx.Graph]:
     number_of_samples = 200
     probability_of_edge = 0.03
     seed = 13
@@ -145,96 +144,77 @@ def create_graph() -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tens
 
     train_indexes = list(set(train_indexes))
 
-    features = torch.Tensor(features) / 10
+    features = tf.constant(features, dtype=tf.float32) / 10
 
-    train_labels = torch.tensor([[labels[i], i]
-                                 for i in train_indexes], dtype=torch.long)
-    validation_labels = torch.tensor(labels, dtype=torch.long)
+    train_labels = tf.constant([[labels[i], i]
+                                 for i in train_indexes], dtype=tf.int64)
+    validation_labels = tf.constant(labels, dtype=tf.int64)
 
-    adjacency_matrix = torch.from_numpy(nx.to_numpy_array(graph))
+    adjacency_matrix = tf.convert_to_tensor(nx.to_numpy_array(graph))
 
     return features, train_labels, validation_labels, adjacency_matrix, graph
 
-class GraphConv(nn.Module):
-    def __init__(
-        self,
-        input_features: int,
-        output_features: int,
-    ):
-        super(GraphConv, self).__init__()
-        self._input_features = input_features
-        self._output_features = output_features
-        self.weight = nn.Parameter(
-            torch.Tensor(input_features, output_features))
-        self.bias = nn.Parameter(torch.Tensor(output_features))
-        self.reset_parameters()
+class GraphConv(tf.keras.layers.Layer):
+    def __init__(self, input_features, output_features):
+        super().__init__(dtype=tf.float64)
+        self.weight = self.add_weight(name='weight', shape=(input_features, output_features),
+                                      initializer='glorot_uniform')
+        self.bias = self.add_weight(name='bias', shape=(output_features,), initializer='zeros')
 
-    def reset_parameters(self) -> None:
-        if self.weight is not None:
-            nn.init.xavier_uniform_(self.weight)
-
-        if self.bias is not None:
-            nn.init.zeros_(self.bias)
-
-    def forward(
-        self,
-        inputs: torch.Tensor,
-        adjacency_matrix: torch.Tensor,
-    ) -> torch.Tensor:
+    def call(self, inputs, adjacency_matrix):
         return adjacency_matrix @ inputs @ self.weight + self.bias
 
-class GCN(nn.Module):
+
+class GCN(tf.keras.Model):
     def __init__(self):
-        super(GCN, self).__init__()
+        super().__init__(dtype=tf.float64)
         self._graph_conv_1 = GraphConv(6, 4)
-        self._activation_1 = nn.ReLU()
         self._graph_conv_2 = GraphConv(4, 2)
-        self._activation_2 = nn.LogSoftmax(dim=1)
 
-    def forward(
-        self,
-        inputs: torch.Tensor,
-        adjacency_matrix: torch.Tensor,
-    ) -> torch.Tensor:
-        x = self._graph_conv_1(inputs, adjacency_matrix)
-        x = self._activation_1(x)
-        x = self._graph_conv_2(x, adjacency_matrix)
-        x = self._activation_2(x)
-
-        return x
+    def call(self, inputs, adjacency_matrix):
+        hidden = tf.nn.relu(self._graph_conv_1(inputs, adjacency_matrix))
+        return tf.nn.log_softmax(self._graph_conv_2(hidden, adjacency_matrix), axis=1)
 
 
 def normalize_adjacency(adjacency):
-    with_self_loops = adjacency + torch.eye(len(adjacency), dtype=adjacency.dtype, device=adjacency.device)
-    inv_degree = with_self_loops.sum(dim=1).rsqrt()
+    with_self_loops = adjacency + tf.eye(len(adjacency), dtype=adjacency.dtype)
+    inv_degree = tf.math.rsqrt(tf.reduce_sum(with_self_loops, axis=1))
     return inv_degree[:, None] * with_self_loops * inv_degree[None, :]
 
 
+def nll_loss(log_probs, labels):
+    return -tf.reduce_mean(tf.gather(log_probs, labels, axis=1, batch_dims=1))
+
+
+def accuracy(log_probs, labels):
+    return float(tf.reduce_mean(tf.cast(tf.argmax(log_probs, axis=1) == labels, tf.float64)))
+
+
 def train(model, features, train_labels, labels, adjacency, epochs):
-    optimizer = torch.optim.Adam(model.parameters())
+    optimizer = tf.keras.optimizers.Adam(epsilon=1e-8)
     train_nodes = train_labels[:, 1]
-    validation = torch.ones(len(labels), dtype=torch.bool)
-    validation[train_nodes] = False
-    validation_count = int(validation.sum())
-    print(f'Train nodes: {len(train_nodes)}, validation nodes: {validation_count}', flush=True)
+    validation = ~np.isin(np.arange(len(labels)), train_nodes.numpy())
+    validation_labels = tf.boolean_mask(labels, validation)
+    print(f'Train nodes: {len(train_nodes)}, validation nodes: {len(validation_labels)}', flush=True)
+
+    @tf.function
+    def train_step():
+        with tf.GradientTape() as tape:
+            output = tf.gather(model(features, adjacency), train_nodes)
+            loss = nll_loss(output, train_labels[:, 0])
+        gradients = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        return loss
+
     records = []
     for epoch in range(1, epochs + 1):
-        model.train()
-        optimizer.zero_grad()
+        train_loss = float(train_step())
         output = model(features, adjacency)
-        train_output = output[train_nodes]
-        train_loss = F.nll_loss(train_output, train_labels[:, 0])
-        train_loss.backward()
-        optimizer.step()
-
-        model.eval()
-        with torch.no_grad():
-            output = model(features, adjacency)
-            validation_output = output[validation]
-            validation_loss = F.nll_loss(validation_output, labels[validation]).item()
-            validation_accuracy = (validation_output.argmax(dim=1) == labels[validation]).double().mean().item()
-            train_accuracy = (output[train_nodes].argmax(dim=1) == train_labels[:, 0]).double().mean().item()
-        records.append((epoch, train_loss.item(), train_accuracy, validation_loss, validation_accuracy))
+        validation_output = tf.boolean_mask(output, validation)
+        validation_loss = float(nll_loss(validation_output, validation_labels))
+        validation_accuracy = accuracy(validation_output, validation_labels)
+        train_accuracy = accuracy(tf.gather(output, train_nodes), train_labels[:, 0])
+        records.append((epoch, train_loss, train_accuracy, validation_loss, validation_accuracy))
         if epoch in (1, epochs) or epoch % 100 == 0:
             print(f'Epoch {epoch}: train accuracy={train_accuracy:.2%}, '
                   f'validation loss={validation_loss:.6f}, validation accuracy={validation_accuracy:.2%}', flush=True)
@@ -249,12 +229,13 @@ def main():
     args = parser.parse_args()
     if args.epochs < 1:
         parser.error('epochs must be positive')
-    torch.manual_seed(13)
-    torch.set_num_threads(min(torch.get_num_threads(), 4))
+    tf.config.threading.set_intra_op_parallelism_threads(4)
+    tf.config.threading.set_inter_op_parallelism_threads(2)
+    tf.keras.utils.set_random_seed(13)
     features, train_labels, validation_labels, adjacency_matrix, G = create_graph()
-    features = features.double()
-    adjacency = normalize_adjacency(adjacency_matrix.double())
-    model = GCN().double()
+    features = tf.cast(features, tf.float64)
+    adjacency = normalize_adjacency(tf.cast(adjacency_matrix, tf.float64))
+    model = GCN()
     history = train(model, features, train_labels, validation_labels, adjacency, args.epochs)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -265,11 +246,13 @@ def main():
 
 def plot_example(model, features, train_labels, validation_labels, adjacency, G, history):
     import plotly.express as px
+
+    feature_values = features.numpy()
     colors = ['gray', 'purple']
     color_map_train = ['red' for _ in range(200)]
-    color_map = [colors[i] for i in validation_labels]
+    color_map = [colors[i] for i in validation_labels.numpy()]
 
-    for i in train_labels:
+    for i in train_labels.numpy():
         color_map_train[i[1]] = colors[i[0]]
 
     draw_graph(G)
@@ -279,23 +262,23 @@ def plot_example(model, features, train_labels, validation_labels, adjacency, G,
 
     draw_graph(G, color_map)
 
-    positions = {i: (features[i, 1], features[i, 2]) for i in range(len(features))}
+    positions = {i: (feature_values[i, 1], feature_values[i, 2]) for i in range(len(features))}
 
     draw_graph(G, color_map, positions, axis_labels=('love', 'wealth'))
 
-    positions = {i: (features[i, 0], features[i, 5]) for i in range(len(features))}
+    positions = {i: (feature_values[i, 0], feature_values[i, 5]) for i in range(len(features))}
 
     draw_graph(
         G, color_map, positions, axis_labels=('number of dogs', 'age of customer'))
 
-    positions = {i: (features[i, 3], features[i, 4]) for i in range(len(features))}
+    positions = {i: (feature_values[i, 3], feature_values[i, 4]) for i in range(len(features))}
 
     draw_graph(G, color_map, positions, axis_labels=(
         'city size', 'healthy eating'))
 
-    with torch.no_grad():
-        probability = model(features, adjacency).exp()
-        certainty, predicted = probability.max(dim=1)
+    probability = tf.exp(model(features, adjacency))
+    certainty = tf.reduce_max(probability, axis=1)
+    predicted = tf.argmax(probability, axis=1)
     positions = {i: (float(predicted[i]), float(certainty[i])) for i in range(len(features))}
     draw_graph(G, color_map, positions, axis_labels=('junk, premium', 'certainty'))
     plt.show()

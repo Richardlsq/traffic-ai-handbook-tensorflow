@@ -13,22 +13,22 @@ ROOT = Path(__file__).resolve().parents[1]
 EXTRACTED = ROOT / '解压代码'
 COURSE_OUTPUT = ROOT / '课程输出'
 BASIC = EXTRACTED / 'Python基础知识代码' / 'Python代码'
-UNITS = ('python', 'pytorch', 'bp', 'rnn', 'cnn', 'gcn', 'metro')
+UNITS = ('python', 'tensorflow', 'bp', 'rnn', 'cnn', 'gcn', 'metro')
 
 
 def check_environment():
     print(f'Python {sys.version.split()[0]} | {sys.executable}', flush=True)
     for name in (
         'numpy', 'pandas', 'scipy', 'sklearn', 'matplotlib', 'openpyxl', 'PIL',
-        'jupyterlab', 'ipykernel', 'nbclient', 'nbformat', 'nbconvert', 'networkx', 'torch', 'torchvision',
+        'jupyterlab', 'ipykernel', 'nbclient', 'nbformat', 'nbconvert', 'networkx', 'plotly', 'tensorflow', 'keras', 'h5py', 'tensorboard',
     ):
         module = importlib.import_module(name)
         print(f'{name} {getattr(module, "__version__", "")}', flush=True)
-    import torch
-    import torchvision
-    trial = torch.ones(1, 1, 3, 3)
-    assert torch.nn.Conv2d(1, 1, 3)(trial).shape == (1, 1, 1, 1)
-    print(f'CUDA available: {torch.cuda.is_available()} | torchvision {torchvision.__version__}', flush=True)
+    import tensorflow as tf
+    with tf.device('/CPU:0'):
+        trial = tf.ones((1, 3, 3, 1))
+        assert tf.keras.layers.Conv2D(1, 3)(trial).shape == (1, 1, 1, 1)
+    print(f'Visible TensorFlow GPUs: {len(tf.config.list_physical_devices("GPU"))}', flush=True)
     print('PASS env: imports and CPU convolution', flush=True)
 
 
@@ -89,7 +89,8 @@ def run_notebook(filename, out, source_cells=None, overrides=None, assertion='',
             'argv': [sys.executable, '-m', 'ipykernel_launcher', '-f', '{connection_file}'],
             'display_name': 'Course quick check',
             'language': 'python',
-            'env': {'CUDA_VISIBLE_DEVICES': '-1', 'OMP_NUM_THREADS': '4', 'OPENBLAS_NUM_THREADS': '4'},
+            'env': {'CUDA_VISIBLE_DEVICES': '-1', 'OMP_NUM_THREADS': '4', 'OPENBLAS_NUM_THREADS': '4',
+                    'TF_NUM_INTRAOP_THREADS': '4', 'TF_NUM_INTEROP_THREADS': '2'},
         }
         (spec / 'kernel.json').write_text(json.dumps(kernel), encoding='utf-8')
         manager = KernelManager(kernel_name='course-quick',
@@ -105,46 +106,47 @@ def run_notebook(filename, out, source_cells=None, overrides=None, assertion='',
                 print(output.text.rstrip(), flush=True)
 
 
-def check_pytorch(out):
+def check_tensorflow(out):
     run_notebook(
-        'Pytorch2.1张量介绍.ipynb', out,
-        source_cells=[4, 21, 61, 69],
-        assertion="""
-assert torch.equal(temp1, temp2)
+        'TensorFlow2.1张量介绍.ipynb', out,
+        assertion='''
+tf.debugging.assert_equal(temp1, temp2)
 assert tuple(output.shape) == (10, 3, 5)
-assert x.device.type == 'cpu'
-""",
+assert 'CPU:0' in x.device
+''',
     )
     run_notebook(
-        'pytorch2.2数据模块.ipynb', out,
-        source_cells=[7, 9, 18, 19],
-        assertion="""
+        'TensorFlow2.2数据模块.ipynb', out,
+        assertion='''
 assert (len(data_train), len(data_test)) == (7997, 1997)
 assert tuple(xb.shape) == (5, 3) and tuple(yb.shape) == (5, 1)
-torch.testing.assert_close(data_train[len(data_train) - 1][1], data_train.x[-1:])
-torch.testing.assert_close(data_test[-1][1], data_test.x[-1:])
+tf.debugging.assert_equal(data_train[-1][1], data_train.x[-1:])
+tf.debugging.assert_equal(data_test[-1][1], data_test.x[-1:])
+_, last_batch = next(iter(data_loader_test.skip(len(data_loader_test) - 1)))
+tf.debugging.assert_equal(last_batch[-1], data_test.x[-1:])
 try:
     data_test[len(data_test)]
 except IndexError:
     pass
 else:
     raise AssertionError('Dataset must reject an out-of-range sample index')
-""",
+''',
     )
     run_notebook(
-        'Pytorch2.3模型介绍.ipynb', out,
-        source_cells=[4, 6, 31, 34],
-        assertion="""
-assert tuple(out.shape) == (32, 10, 31)
-assert tuple(target.shape) == (32, 1, 28, 28)
-""",
+        'TensorFlow2.3模型介绍.ipynb', out,
+        assertion='''
+assert tuple(out.shape) == (3, 5, 20)
+assert tuple(h.shape) == tuple(c.shape) == (4, 3, 20)
+assert tuple(dconv1(tf.zeros((16, 8, 1))).shape) == (16, 23, 1)
+assert tuple(dconv2(tf.zeros((16, 8, 8, 1))).shape) == (16, 23, 23, 1)
+assert tuple(target.shape) == (10, 10)
+''',
     )
     run_notebook(
-        'pytorch2.4激活函数.ipynb', out,
-        source_cells=[6, 8, 13, 15, 21, 23, 29, 31],
-        assertion='torch.testing.assert_close(output, torch.tensor([-0.02, -0.005, 0.5, 2.]))',
+        'TensorFlow2.4激活函数.ipynb', out,
+        assertion='tf.debugging.assert_near(output, tf.constant([-0.02, -0.005, 0.5, 2.]))',
     )
-    print('PASS pytorch: tensor, chronological batches, model shapes and activations', flush=True)
+    print('PASS tensorflow: tensor, chronological batches, model shapes and activations', flush=True)
 
 
 def check_bp(out):
@@ -160,7 +162,6 @@ print('PASS bp: 800 test labels and decreasing training loss')
 def check_rnn(out):
     run_notebook(
         '人工智能基础3.2循环神经网络.ipynb', out,
-        source_cells=[5, 7, 12, 14, 16, 18, 21, 24, 26, 28, 30, 31, 32, 33, 34],
         overrides={28: ('range(200)', 'range(1)')},
         assertion='''
 assert tuple(test1.shape) == (269, 1, 5)
@@ -176,19 +177,21 @@ def check_cnn(out):
     setup = "import os\n" f"os.environ['COURSE_OUTPUT_DIR'] = {str(out / '图形')!r}"
     run_notebook(
         'CNN.ipynb', out,
-        source_cells=[16, 18, 21, 23, 25, 27, 37, 40, 42],
+        overrides={
+            29: ('epochs = 20', 'epochs = 1'),
+            44: ('for epoch in range(epochs):',
+                 'train_loader = train_loader.take(2)\ntest_loader = test_loader.take(2)\nfor epoch in range(1):'),
+        },
         setup=setup,
         assertion='''
-conv1 = CNNnetwork().to(device)
-seq, target = train_data[0]
-one_step = conv1(seq.reshape(1, 1, -1).to(device))
-assert tuple(one_step.shape) == (1, 1)
+assert future == 300 and np.isfinite(true_predictions).all()
 assert len(train_dataset) == 60000 and len(test_dataset) == 10000
 batch, labels = next(iter(test_loader))
-assert tuple(net(batch.to(device)).shape) == (64, 10)
-loss, acc = test_epoch(net, [(batch, labels)], device)
-assert np.isfinite(loss) and 0 <= acc <= 1
-print('PASS cnn: 1D (1, 1) forecast and MNIST (64, 10) logits')
+assert tuple(batch.shape) == (64, 28, 28, 1)
+assert tuple(net(batch, training=False).shape) == (64, 10)
+assert np.isfinite(train_loss_list + test_loss_list).all()
+assert 0 <= test_acc_list[0] <= 1
+print('PASS cnn: 300 recursive forecasts, local MNIST, training and (64, 10) logits')
 ''',
     )
 
@@ -215,7 +218,7 @@ def graph_check(unit, out):
     subprocess.run([*command, str(directory/'main.py'), '--epochs', '1', '--patience', '1',
                     '--device', 'cpu', '--output-dir', str(training), *ablation],
                    cwd=ROOT, check=True)
-    checkpoint = training / 'best.pth' 
+    checkpoint = training / 'best.weights.h5'
 
     prediction = out / '预测'
     subprocess.run([*command, str(directory/'main_predict.py'), '--checkpoint', str(checkpoint),
@@ -247,8 +250,8 @@ def main():
         section.mkdir(parents=True, exist_ok=False)
         if unit == 'python':
             check_python()
-        elif unit == 'pytorch':
-            check_pytorch(section)
+        elif unit == 'tensorflow':
+            check_tensorflow(section)
         elif unit == 'bp':
             check_bp(section)
         elif unit == 'rnn':

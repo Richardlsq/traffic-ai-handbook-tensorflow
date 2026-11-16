@@ -1,11 +1,28 @@
 from pathlib import Path
 
-from torch.utils.data import DataLoader
+import tensorflow as tf
 
 from data.datasets import Traffic_speed
 
 
 DATA_DIR = Path(__file__).resolve().parent
+
+
+class TrafficBatches:
+    def __init__(self, dataset, batch_size):
+        self.dataset = dataset
+        fields = (dataset.X, dataset.Y)
+        if not dataset.is_train:
+            fields += (dataset.Y_original,)
+        options = tf.data.Options()
+        options.threading.private_threadpool_size = 1
+        self.batches = tf.data.Dataset.from_tensor_slices(fields).batch(batch_size).with_options(options)
+
+    def __iter__(self):
+        return iter(self.batches)
+
+    def __len__(self):
+        return len(self.batches)
 
 
 def _make_loaders(filename, time_interval, time_lag, tg_in_one_day, forecast_day_number, pre_len, batch_size):
@@ -16,7 +33,7 @@ def _make_loaders(filename, time_interval, time_lag, tg_in_one_day, forecast_day
         for is_train, is_val in ((True, False), (True, True), (False, False))
     ]
     maximum, minimum = datasets[0].get_max_min_speed()
-    loaders = [DataLoader(split, batch_size=batch_size, shuffle=False) for split in datasets]
+    loaders = [TrafficBatches(split, batch_size) for split in datasets]
     return *loaders, maximum, minimum
 
 

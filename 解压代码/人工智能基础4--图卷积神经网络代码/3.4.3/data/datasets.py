@@ -1,11 +1,10 @@
 from pathlib import Path
 
 import numpy as np
-import torch
-from torch.utils.data import Dataset
+import tensorflow as tf
 
 
-class Traffic_speed(Dataset):
+class Traffic_speed:
     def __init__(self, time_interval, time_lag, tg_in_one_day, forecast_day_number,
                  speed_data, pre_len, is_train=True, is_val=False, val_rate=0.1):
         self.is_train = is_train
@@ -43,10 +42,10 @@ class Traffic_speed(Dataset):
         indices = self.target_indices[:, None] + offsets
         histories = normalized[:, indices].transpose(1, 0, 2)
         targets = self.target_indices[:, None] + np.arange(pre_len)
-        self.X = torch.from_numpy(np.ascontiguousarray(histories))
-        self.Y = torch.from_numpy(np.ascontiguousarray(normalized[:, targets].transpose(1, 0, 2)))
+        self.X = tf.convert_to_tensor(np.ascontiguousarray(histories))
+        self.Y = tf.convert_to_tensor(np.ascontiguousarray(normalized[:, targets].transpose(1, 0, 2)))
         if not is_train:
-            self.Y_original = torch.from_numpy(np.ascontiguousarray(data[:, targets].transpose(1, 0, 2)))
+            self.Y_original = tf.convert_to_tensor(np.ascontiguousarray(data[:, targets].transpose(1, 0, 2)))
 
     @staticmethod
     def read_data(source):

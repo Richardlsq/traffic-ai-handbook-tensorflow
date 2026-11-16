@@ -4,7 +4,7 @@
 
 **[在线阅读手册](https://richardlsq.github.io/traffic-ai-handbook-tensorflow/)** · **[下载完整课程 ZIP](https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/releases/latest/download/traffic-ai-handbook-tensorflow.zip)**
 
-[原版手册仓库](https://github.com/Richardlsq/traffic-ai-handbook) · [原课程](https://www.icourse163.org/course/NJTU-1471607173) · [张金雷的 GitHub](https://github.com/JinleiZhangBJTU) · [Shiqi Li 的 GitHub](https://github.com/Richardlsq)
+[PyTorch 版手册](https://richardlsq.github.io/traffic-ai-handbook/) · [原课程](https://www.icourse163.org/course/NJTU-1471607173) · [张金雷的 GitHub](https://github.com/JinleiZhangBJTU) · [Shiqi Li 的 GitHub](https://github.com/Richardlsq)
 
 打开 [课程手册](人工智能与交通大数据实战-课程代码手册.html) 即可离线学习。正文以张金雷老师的《Python 基础与进阶》《人工智能基础模型简介实战》《人工智能在轨道交通刷卡数据的应用综述及实战》课件为主线。按章节阅读概念、课件例题、图表和自测，再展开配套实验运行 Notebook。手册列有课件页码。
 

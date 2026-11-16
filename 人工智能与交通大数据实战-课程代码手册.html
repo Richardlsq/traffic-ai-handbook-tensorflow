@@ -279,7 +279,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <nav aria-label="章节">
 <a href="#overview">课程概览</a>
 <a href="#python"><span class="navnum">1.x</span>Python 基础知识</a>
-<a href="#tensorflow"><span class="navnum">2.x</span>TensorFlow 基础知识</a>
+<a href="#tensorflow"><span class="navnum">2.x</span>深度学习基础</a>
 <a href="#bp"><span class="navnum">3.1</span>反向传播</a>
 <a href="#rnn"><span class="navnum">3.2</span>循环神经网络</a>
 <a href="#cnn"><span class="navnum">3.3</span>卷积神经网络</a>
@@ -297,11 +297,12 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <section aria-labelledby="title" class="hero" id="overview">
 <div class="hero-copy">
 <h1 id="title">人工智能与<br/>交通大数据实战<span>课程手册 · TensorFlow 版</span></h1>
-<p>跟随张金雷老师的课程课件，从一条客流记录学到全网预测。先读图、手算与自测，再在各章用 TensorFlow 和 Notebook 做配套实验。</p>
+<p>跟随张金雷老师的课程课件，从一条客流记录学到全网预测。先读图、手算与自测，再运行各章的配套实验。</p>
 <div class="hero-buttons">
 <a class="button" href="#python">从第一章开始</a>
 <a class="button secondary" href="#course-slides">查课件页码</a>
 <a class="button secondary" href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/releases/latest/download/traffic-ai-handbook-tensorflow.zip">下载完整课程手册 ZIP</a>
+<a class="button secondary" href="https://richardlsq.github.io/traffic-ai-handbook/">切换到 PyTorch 版</a>
 </div>
 </div>
 <div class="hero-flow">
@@ -316,6 +317,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </section>
 <section aria-labelledby="python-title" class="section" id="python">
 <div class="section-title"><span class="chapter-num">1.1–1.9</span><h2 id="python-title">Python 基础知识</h2></div>
+<div class="lecture-body">
 <p class="lead">从一条客流记录出发，学习如何表达字段、清理报表、构造数值矩阵，并按任务选择统计与建模工具。</p>
 <article class="card teaching lesson" aria-labelledby="python-records">
 <h3 id="python-records">1.1–1.4　用 Python 表达一条出行记录</h3>
@@ -353,6 +355,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <p>用 Matplotlib 画客流曲线时，横轴标时间，纵轴标人数，给预测与真实值分别加图例。散点图适合看预测值与真实值是否贴近对角线，条形图适合比较各站的同一指标。预测实验按时间划分数据，并在训练段学习预处理参数。</p>
 <p class="teaching-reference">课件依据 · 《Python 基础与进阶》第 41–58 页。</p>
 </article>
+</div>
 <details class="card history lab-panel" id="lab-python"><summary>配套实验 · Python 数据处理与可视化</summary>
 <div class="lab-body"><div class="card teaching" id="teach-python-types">
 <h3>从 Python 容器到交通记录</h3>
@@ -432,29 +435,31 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </details>
 </section>
 <section aria-labelledby="tensorflow-title" class="section" id="tensorflow">
-<div class="section-title"><span class="chapter-num">2.1–2.4</span><h2 id="tensorflow-title">TensorFlow 基础知识</h2></div>
-<p class="lead">把课件中的数据批次、网络层和训练步骤写成 TensorFlow 表达，先认清样本、轴和目标之间的关系。</p>
+<div class="section-title"><span class="chapter-num">2.1–2.4</span><h2 id="tensorflow-title">深度学习基础</h2></div>
+<div class="lecture-body">
+<p class="lead">认清样本、张量轴和目标之间的关系，再沿着一个批次理解网络层、损失和参数更新。</p>
 <article class="card teaching lesson" aria-labelledby="tf-tensors">
 <h3 id="tf-tensors">把样本组织成带轴含义的张量</h3>
 <p>一个标量可以是一站在一个时段的客流。一条站点序列给出长度轴，批量输入再加批次轴。下面三类张量使用相似的数值容器，轴的顺序决定模型怎样读取输入。</p>
-<div class="tablebox" role="region" aria-label="TensorFlow 输入的轴" tabindex="0">
-<table><thead><tr><th scope="col">任务</th><th scope="col">常用形状</th><th scope="col">每条样本</th></tr></thead>
-<tbody><tr><th scope="row">时间序列卷积</th><td><code>(B, 72, 1)</code></td><td>72 个时间位置，各带一个客流通道</td></tr>
-<tr><th scope="row">手写数字分类</th><td><code>(B, 28, 28, 1)</code></td><td>28 × 28 像素的单通道灰度图</td></tr>
-<tr><th scope="row">路网预测</th><td><code>(B, 156, 10)</code></td><td>156 条路分别有 10 个历史速度特征</td></tr></tbody></table>
+<div class="tablebox" role="region" aria-label="模型输入的概念轴" tabindex="0">
+<table><thead><tr><th scope="col">任务</th><th scope="col">每批数据的轴大小</th><th scope="col">每条样本</th></tr></thead>
+<tbody><tr><th scope="row">时间序列卷积</th><td><code>B × 72 × 1</code></td><td>72 个时间位置，各带一个客流通道</td></tr>
+<tr><th scope="row">手写数字分类</th><td><code>B × 28 × 28 × 1</code></td><td>28 × 28 像素的单通道灰度图</td></tr>
+<tr><th scope="row">路网预测</th><td><code>B × 156 × 10</code></td><td>156 条路分别有 10 个历史速度特征</td></tr></tbody></table>
 </div>
-<p><code>tf.reshape</code> 保持元素次序并重新分组，<code>tf.transpose</code> 交换轴。写输入前先标出批次、时间、空间和通道。<code>tf.data</code> 把已对齐的输入和标签组成样本，再从这些样本组批。对于按时间切分的正弦序列，长度为 <var>L</var> 的一段用前 3 点预测下一点，共有 <code>L − 4 + 1</code> 个窗口。</p>
+<p>表中按概念顺序列出轴的大小，传给模型时需按对应接口排列。重塑形状会重新分组元素，转置会交换轴。先对齐输入和标签形成样本，再从样本中组批。对于按时间切分的正弦序列，长度为 <var>L</var> 的一段用前 3 点预测下一点，共有 <code>L − 4 + 1</code> 个窗口。</p>
 <details class="question"><summary>自测 · 长度分别为 8,000 和 2,000 的两段，可以各自构造多少个窗口？</summary>
 <p>分别为 7,997 和 1,997。每个窗口都需要 3 个输入点和 1 个目标点，段间边界按本练习的设定分别处理。</p></details>
-<p class="teaching-reference">框架适配 · 对照《人工智能在轨道交通刷卡数据的应用综述及实战》第 54–62、65、78–87 页的数据、模型与训练流程，使用 TensorFlow/Keras 表达。</p>
+<p class="teaching-reference">课件依据 · 《人工智能在轨道交通刷卡数据的应用综述及实战》第 54–62、65、78–87 页。各框架的张量轴顺序与批处理用法见本章实验。</p>
 </article>
 <article class="card teaching lesson" aria-labelledby="tf-train-loop">
 <h3 id="tf-train-loop">一个批次如何更新模型</h3>
 <div class="steps" aria-label="一个训练批次"><span>取输入与标签</span><span class="arrow" aria-hidden="true">→</span><span>前向计算</span><span class="arrow" aria-hidden="true">→</span><span>计算损失</span><span class="arrow" aria-hidden="true">→</span><span>求梯度</span><span class="arrow" aria-hidden="true">→</span><span>优化器更新</span></div>
-<p>一个 Dense 单元先求输入的加权和，再由激活函数决定输出。Sigmoid 把输出映射到 0 到 1，Tanh 给出有符号的响应，ReLU 将负值置零，Leaky ReLU 在负半轴保留一个小斜率。训练中，<code>tf.GradientTape</code> 记录前向和损失的计算，梯度给出各参数的局部变化方向。验证时也会计算预测和损失，用它选择权重，参数更新发生在训练批次。</p>
-<p class="teaching-reference">课件依据 · 《人工智能基础模型简介实战》第 4–16、20–26、51–56 页。各激活函数和 Keras API 见本章实验。</p>
+<p>一个 Dense 单元先求输入的加权和，再由激活函数决定输出。Sigmoid 把输出映射到 0 到 1，Tanh 给出有符号的响应，ReLU 将负值置零，Leaky ReLU 在负半轴保留一个小斜率。训练时从前向结果计算损失，再通过自动微分得到损失对各参数的梯度，由优化器更新参数。验证时计算预测和损失，用于比较不同轮次的权重。</p>
+<p class="teaching-reference">课件依据 · 《人工智能基础模型简介实战》第 4–16、20–26、51–56 页。各激活函数与框架接口见本章实验。</p>
 </article>
-<details class="card history lab-panel" id="lab-tensorflow"><summary>配套实验 · 张量、数据集、网络层和激活函数</summary>
+</div>
+<details class="card history lab-panel" id="lab-tensorflow"><summary>配套实验 · TensorFlow 张量、数据集、网络层和激活函数</summary>
 <div class="lab-body"><div class="card teaching" id="teach-tensorflow-shapes">
 <h3>跟踪批次、通道和梯度</h3>
 <p>张量带有形状、数据类型和设备。时序模型常用 <code>(批次, 长度, 通道)</code> 表示一维卷积输入，二维卷积多一个空间轴。<code>tf.reshape</code> 重新分组元素，<code>tf.transpose</code> 交换轴。<code>tf.keras.Model</code> 管理层与可训练参数，<code>tf.GradientTape</code> 记录前向运算并计算梯度，优化器据此更新参数。</p><div class="snippet" data-course-demo=""><div class="snippet-head"><span>TensorFlow · 一个批次完成前向、反向与更新</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="TensorFlow · 一个批次完成前向、反向与更新" tabindex="0"><code><span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
@@ -519,6 +524,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </section>
 <section aria-labelledby="bp-title" class="section" id="bp">
 <div class="section-title"><span class="chapter-num">3.1</span><h2 id="bp-title">反向传播</h2></div>
+<div class="lecture-body">
 <p class="lead">从一张小网络手算前向、误差和权重更新，理解链式法则如何把最终损失传回每个参数。</p>
 <article class="card teaching lesson" aria-labelledby="bp-ppt-example">
 <h3 id="bp-ppt-example">课件例题 · 从两个输入算到两个输出</h3>
@@ -543,6 +549,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </details>
 <p class="teaching-reference">课件依据 · 《人工智能基础模型简介实战》第 8–16 页。后续双月形练习使用二元交叉熵，见第 17–27 页。</p>
 </article>
+</div>
 <details class="card history lab-panel" id="lab-bp"><summary>配套实验 · 梯度校验与双月形分类</summary>
 <div class="lab-body"><div class="card teaching" id="teach-bp-chain">
 <h3>手算一次反向传播</h3>
@@ -598,6 +605,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </section>
 <section aria-labelledby="rnn-title" class="section" id="rnn">
 <div class="section-title"><span class="chapter-num">3.2</span><h2 id="rnn-title">循环神经网络</h2></div>
+<div class="lecture-body">
 <p class="lead">把循环沿时间展开，再用 LSTM 的三个门解释序列记忆与单站短时预测。</p>
 <article class="card teaching lesson" aria-labelledby="rnn-timeline">
 <h3 id="rnn-timeline">沿时间展开 RNN，辨认输入与输出</h3>
@@ -624,6 +632,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <p>在课件的单站案例中，用前五个客流点预测第六个点，然后向前滑一格。若序列为 <code>[12, 15, 18, 22, 26, 31, 29]</code>，前两个目标分别是 31 和 29。滚动一步预测可以使用当时已观测到的真实历史。固定起点预测多步时，未来观测尚未到达，需要输出多个时距或用预测继续向前滚动。</p>
 <p class="teaching-reference">课件依据 · 《人工智能基础模型简介实战》第 34–49 页。门值与客流为教学构造。</p>
 </article>
+</div>
 <details class="card history lab-panel" id="lab-rnn"><summary>配套实验 · 西直门 LSTM 预测与误差</summary>
 <div class="lab-body"><div class="card teaching" id="teach-rnn-gates">
 <h3>把循环状态沿时间展开</h3>
@@ -687,6 +696,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </section>
 <section aria-labelledby="cnn-title" class="section" id="cnn">
 <div class="section-title"><span class="chapter-num">3.3</span><h2 id="cnn-title">卷积神经网络</h2></div>
+<div class="lecture-body">
 <p class="lead">用课件里的数字矩阵看卷积核怎样滑动，再把同样的局部计算用于客流序列和图像。</p>
 <article class="card teaching lesson" aria-labelledby="cnn-convolution-board">
 <h3 id="cnn-convolution-board">课件例题 · 滑动卷积核</h3>
@@ -722,6 +732,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <p>若每个输出通道有一个偏置，参数为 <code>(3×3×1+1)×32 = 320</code>。每个卷积核重复使用，所以参数数目不乘输出图的高或宽。</p></details>
 <p class="teaching-reference">课件依据 · 《人工智能基础模型简介实战》第 53–56、61–72 页。</p>
 </article>
+</div>
 <details class="card history lab-panel" id="lab-cnn"><summary>配套实验 · 一维客流卷积与 MNIST</summary>
 <div class="lab-body"><div class="card teaching" id="teach-cnn-receptive">
 <h3>手算卷积、池化和输出形状</h3>
@@ -766,6 +777,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </section>
 <section aria-labelledby="gcn-title" class="section" id="gcn">
 <div class="section-title"><span class="chapter-num">3.4</span><h2 id="gcn-title">图卷积神经网络</h2></div>
+<div class="lecture-body">
 <p class="lead">从邻接矩阵理解节点怎样读取自己的历史和邻居的特征，并应用到深圳路网。</p>
 <article class="card teaching lesson" aria-labelledby="gcn-degree">
 <h3 id="gcn-degree">从规则网格换到道路拓扑</h3>
@@ -787,6 +799,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <p>图节点顺序要和速度矩阵一致。训练段用于拟合缩放参数和更新模型，随后用验证 MSE 选择权重。测试阶段在留出的时刻比较预测与最近一次真实观测。课件按全天 96 个 15 分钟片说明日历日，配套脚本的默认切分保留了 360 个测试时间片。</p>
 <p class="teaching-reference">课件依据 · 《人工智能基础模型简介实战》第 80–92 页。脚本设置见本章实验。</p>
 </article>
+</div>
 <details class="card history lab-panel" id="lab-gcn"><summary>配套实验 · 四节点传播、节点分类与深圳路速</summary>
 <div class="lab-body"><div class="card teaching" id="teach-gcn-neighborhood">
 <h3>从邻接矩阵到邻居聚合</h3>
@@ -848,6 +861,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </section>
 <section aria-labelledby="metro-title" class="section" id="metro">
 <div class="section-title"><span class="chapter-num">案例</span><h2 id="metro-title">地铁客流预测</h2></div>
+<div class="lecture-body">
 <p class="lead">从进站、OD 和断面等运营问题出发，学习 AFC 数据如何变成时间序列，以及怎样预测全网下一时段进站流。</p>
 <article class="card teaching lesson" aria-labelledby="metro-tasks">
 <h3 id="metro-tasks">运营问题怎样决定预测目标</h3>
@@ -879,7 +893,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </div>
 <figure class="lesson-figure">
 <div class="steps" aria-label="地铁模型数据流"><span>每种历史 <code>B × 276 × 10</code></span><span class="arrow" aria-hidden="true">→</span><span>各做 GCN 并拼接 <code>B × 276 × 30</code></span><span class="arrow" aria-hidden="true">→</span><span>二维卷积、展平与全连接</span><span class="arrow" aria-hidden="true">→</span><span>下一片进站量 <code>B × 276 × 1</code></span></div>
-<figcaption>按课件第 52、63–67 页改绘。课件示意以进站历史为输入，TensorFlow 配套实验另外提供出站输入与仅进站对照。</figcaption>
+<figcaption>按课件第 52、63–67 页改绘。课件示意以进站历史为输入，配套实验还提供进站加出站输入，以及仅进站对照。</figcaption>
 </figure>
 <p>第四周的真实值可当作训练标签，也可在预测第五周时作为已知历史。区分的是<strong>当时是否已经观测</strong>与<strong>哪些目标用来拟合模型</strong>。先用验证段决定何时停止和保留哪轮权重，再在测试段还原到人数尺度。</p>
 <p class="teaching-reference">课件依据 · 《人工智能在轨道交通刷卡数据的应用综述及实战》第 51–55、63–72、88–91 页。节点数按数据矩阵和可运行实验核对为 276。</p>
@@ -890,6 +904,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <p>配套实验用上一时刻的真实值作基线，帮助判断模型是否改善短时预测。随后按车站、时段和相邻客流变化量比较误差。实现中的 <code>r2_score</code> 输出决定系数 <strong>R²</strong>，其口径与将皮尔逊相关系数平方不同。</p>
 <p class="teaching-reference">课件依据 · 《人工智能在轨道交通刷卡数据的应用综述及实战》第 68–77、90–91 页。误差计算为教学构造。</p>
 </article>
+</div>
 <details class="card history lab-panel" id="lab-metro"><summary>配套实验 · 地铁数据、训练命令与输入对照</summary>
 <div class="lab-body"><p>整包已附训练数据和<a href="#src-analysis">地铁误差分析脚本</a>。运行本章命令可比较两种输入设置，并查看按站点和时段汇总的误差。</p><div class="note" id="metro-data-source">
 <h3>北京地铁客流数据（MetroBJ2016）</h3>

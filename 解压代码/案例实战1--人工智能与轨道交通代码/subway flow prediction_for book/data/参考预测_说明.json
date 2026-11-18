@@ -1,0 +1,61 @@
+{
+ "framework": "TensorFlow",
+ "station": "西直门",
+ "station_index_zero_based": 34,
+ "selection": "留出周第一个运营日，西直门全部 72 个时间片，按目标索引顺序",
+ "target_range_inclusive": [
+  1440,
+  1511
+ ],
+ "unit": "人",
+ "excerpt_elements": 72,
+ "full_elements": 99360,
+ "fields": {
+  "previous": "上一真实观测",
+  "dual": "进站与出站输入",
+  "inflow_only": "仅进站输入"
+ },
+ "training": {
+  "seed": 42,
+  "max_epochs": 12,
+  "batch_size": 32,
+  "learning_rate": 0.001,
+  "selection": "验证 MSE 最低的轮次"
+ },
+ "saved_runs": {
+  "dual": {
+   "checkpoint_epoch": 12,
+   "full_metrics": {
+    "mae": 60.22814198331489,
+    "rmse": 95.15723924267434
+   },
+   "predictions_npz_sha256": "60fcb4d2eca56929d0cfa4b571f278b1f6510372cc549ca6432b8a723642bd72"
+  },
+  "inflow_only": {
+   "checkpoint_epoch": 11,
+   "full_metrics": {
+    "mae": 47.89748396323077,
+    "rmse": 80.62618076726396
+   },
+   "predictions_npz_sha256": "8525593b7eee1163e20e2a316baeb85094df68b24eb77cbc6e713e6735407087"
+  }
+ },
+ "full_baseline": {
+  "mae": 50.66965579710145,
+  "rmse": 101.02379699047938
+ },
+ "excerpt_metrics": {
+  "previous": {
+   "mae": 146.36111111111111,
+   "rmse": 226.50496683295933
+  },
+  "dual": {
+   "mae": 155.78665724810628,
+   "rmse": 207.38584905584412
+  },
+  "inflow_only": {
+   "mae": 125.63888082694676,
+   "rmse": 177.28810977154703
+  }
+ }
+}

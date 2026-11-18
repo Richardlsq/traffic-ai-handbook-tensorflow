@@ -333,6 +333,39 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
   .review-figure.is-wide img { max-width: none; width: var(--figure-small-width); }
 }
 
+#book-dialog { box-sizing:border-box; width:min(46rem,calc(100% - 1.4rem)); max-height:80vh; max-height:80dvh; padding:0; border:1px solid #bdd1c8; border-radius:16px; color:#17342d; background:#fbfcfa; }
+#book-dialog::backdrop { background:rgba(12,35,29,.55); }
+.book-search-top { position:sticky; top:0; padding:1rem 1.2rem .6rem; background:#fbfcfa; border-bottom:1px solid #dbe6df; z-index:1; }
+.book-search-label { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.6rem; }
+#book-query { width:100%; padding:.65rem .8rem; font:inherit; color:inherit; border:1px solid #739589; border-radius:7px; }
+#book-count { font-size:.87rem; margin:.45rem 0 0; }
+#book-results { list-style:none; margin:0; padding:0 1.2rem; }
+#book-results li { padding:.7rem 0; border-bottom:1px solid #dbe6df; overflow-wrap:anywhere; }
+#book-results small,#book-results a { display:block; }
+#book-results small { color:#486358; }
+#book-results a { font-weight:650; margin:.15rem 0; }
+#book-results p { font-size:.9rem; margin:0; }
+#book-more { margin:.7rem 1.2rem; }
+.hero-flow a { color:inherit; text-decoration:underline; text-underline-offset:.18em; }
+#study > article { margin-top:1rem; }
+#study .card { min-width:0; }
+.peer-link { font-size:.87rem; font-weight:500; margin-inline-start:auto; }
+.book-notes { padding:.4rem .8rem; border-inline-start:3px solid #89ab99; margin:1rem 0; }
+.book-notes h2,.book-notes h1 { font-size:1.1rem; }
+@media (max-width:760px) {
+  #study > .tablebox { border:0; overflow:visible; background:transparent; }
+  #study > .tablebox table,#study > .tablebox tbody { display:block; min-width:0; }
+  #study > .tablebox thead { position:absolute; clip-path:inset(50%); width:1px; height:1px; overflow:hidden; }
+  #study > .tablebox tbody tr { display:block; border:1px solid #dbe6df; margin:.75rem 0; border-radius:.65rem; overflow:hidden; background:white; }
+  #study > .tablebox tbody th,#study > .tablebox td { display:block; padding:.5rem .75rem; width:auto; border:0; }
+  #study > .tablebox tbody th { background:#eaf2ed; font-size:1rem; }
+  #study > .tablebox td::before { display:block; font-size:.78rem; font-weight:650; color:#416453; }
+  #study > .tablebox td:nth-child(2)::before { content:"数据与目标"; }
+  #study > .tablebox td:nth-child(3)::before { content:"可用历史"; }
+  #study > .tablebox td:nth-child(4)::before { content:"基线与阅读入口"; }
+}
+@media print { #book-dialog,.peer-link { display:none; } }
+
 </style>
 </head>
 <body>
@@ -342,7 +375,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <a class="brand" href="#overview"><span aria-hidden="true" class="mark">课</span>课程手册</a>
 <div class="top-actions">
 <button aria-controls="sidebar" aria-expanded="false" class="button menu-toggle" id="menu-toggle" type="button">目录</button>
-<a class="button" href="#source" id="find-source"><span aria-hidden="true" class="search-icon"></span>查找源码 <kbd aria-hidden="true">Ctrl K</kbd></a>
+<a class="button" href="#source" id="find-source" aria-haspopup="dialog"><span aria-hidden="true" class="search-icon"></span>搜索全书 <kbd aria-hidden="true">Ctrl K</kbd></a>
 <a class="button download-zip" href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/releases/latest/download/traffic-ai-handbook-tensorflow.zip" aria-label="下载 ZIP（完整课程手册）">下载 ZIP</a>
 </div>
 </div>
@@ -352,6 +385,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <h2>手册目录</h2>
 <nav aria-label="章节">
 <a href="#overview">课程概览</a>
+<a href="#study">按任务查方法</a>
 <a href="#python"><span class="navnum">1.x</span>Python 基础知识</a>
 <a href="#tensorflow"><span class="navnum">2.x</span>深度学习基础</a>
 <a href="#bp"><span class="navnum">3.1</span>反向传播</a>
@@ -373,6 +407,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <h1 id="title">人工智能与<br/>交通大数据实战<span>课程手册 · TensorFlow 版</span></h1>
 <p>跟随张金雷老师的课程课件，从一条客流记录学到全网预测。按原页码阅读三份课件共 245 页的讲义，在例题旁查看代码、输出和核对方法。</p>
 <div class="hero-buttons">
+<a class="button" href="#baseline">做第一个交通实验</a>
 <a class="button" href="#python">从第一章开始</a>
 <a class="button secondary" href="#course-slides">按课件页码阅读</a>
 <a class="button secondary" href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/releases/latest/download/traffic-ai-handbook-tensorflow.zip">下载完整课程手册 ZIP</a>
@@ -382,15 +417,48 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <div class="hero-flow">
 <h2>学习路线</h2>
 <ol>
-<li><span aria-hidden="true" class="flow-dot"></span><span><strong>数据与表示</strong>Python 表格、矩阵和张量</span></li>
-<li><span aria-hidden="true" class="flow-dot"></span><span><strong>理解模型</strong>梯度、循环、卷积和图传播</span></li>
-<li><span aria-hidden="true" class="flow-dot"></span><span><strong>解决交通问题</strong>刷卡数据、时空特征与客流</span></li>
-<li><span aria-hidden="true" class="flow-dot"></span><span><strong>动手实验</strong>校验例题、训练预测、拆解误差</span></li>
+<li><span aria-hidden="true" class="flow-dot"></span><span><strong><a href="#python">数据与表示</a></strong>Python 表格、矩阵和张量</span></li>
+<li><span aria-hidden="true" class="flow-dot"></span><span><strong><a href="#bp">理解模型</a></strong>梯度、循环、卷积和图传播</span></li>
+<li><span aria-hidden="true" class="flow-dot"></span><span><strong><a href="#study">解决交通问题</a></strong>刷卡数据、时空特征与客流</span></li>
+<li><span aria-hidden="true" class="flow-dot"></span><span><strong><a href="#baseline">动手实验</a></strong>校验例题、训练预测、拆解误差</span></li>
 </ol>
 </div>
 </section>
+<section class="section" id="study" aria-labelledby="study-title">
+<div class="section-title"><h2 id="study-title">按交通任务查方法</h2></div>
+<p class="lead">先选预测对象和使用时点，再决定读哪一章。比较模型时，统一输入数据、预测时距、可见历史和测试目标。</p>
+<div class="tablebox"><table><thead><tr><th scope="col">我要解决的问题</th><th scope="col">手头的数据与目标</th><th scope="col">预测时能用什么</th><th scope="col">基线与阅读入口</th></tr></thead><tbody>
+<tr><th scope="row">单站下一片客流</th><td>随机森林使用西直门分时客流表；LSTM 使用有序的 900 点课程序列。</td><td>按时间滚动，每一步都可以使用已到达的新观测。森林用滞后与移动统计量，LSTM 按顺序读取历史窗口。</td><td>先沿用上一观测。<a href="#slide-python-51">随机森林回归</a> · <a href="#lab-rnn">LSTM 滚动一步</a></td></tr>
+<tr><th scope="row">从一个起点向后预测单站客流</th><td>1D CNN 使用西直门 1,800 点序列，最后 300 点留出。</td><td>固定起点后仅使用先前预测填入窗口。核对两种协议的第二步会读到什么。</td><td>可用固定起点的末值持续预测。<a href="#lab-cnn">1D CNN 递归实验</a></td></tr>
+<tr><th scope="row">下一片全网进站量</th><td>276 站的进站矩阵、邻接矩阵，可选出站历史；目标是各站下一片进站人数。</td><td>周、日、近邻三个历史窗口都结束在目标之前。按验证集选权重。</td><td><a href="#baseline">上一观测基线</a> · <a href="#slide-rail-59">核对三个窗口</a> · <a href="#lab-metro">图模型与输入对照</a></td></tr>
+<tr><th scope="row">下一片各路段速度</th><td>156 个深圳路段的历史速度和邻接矩阵。</td><td>最近 10 个时间片；依时间顺序划分，缩放参数由训练段确定。</td><td>先与上一观测速度比较。<a href="#lab-gcn">路速模型与基线</a></td></tr>
+</tbody></table></div>
+
+<article class="card teaching" id="baseline"><h3>第一个交通实验 · 上一观测能预测多准？</h3>
+<p>用上一条真实进站量预测下一条。只需 NumPy，在解压后的课程根目录运行下面的 Python 代码。也可直接打开地铁项目中的 <a href="#src-metro-study">地铁客流入门与误差复算.ipynb</a>，按单元逐步完成。</p>
+<div class="snippet"><div class="snippet-head"><span>Python · 从课程根目录运行</span><button type="button" class="copy" data-copy>复制</button></div><pre tabindex="0"><code>from pathlib import Path
+import numpy as np
+
+case = Path("解压代码/案例实战1--人工智能与轨道交通代码/subway flow prediction_for book")
+flow = np.loadtxt(case / "data" / "in_15min.csv", delimiter=",")
+actual = flow[:, 1440:1800]
+previous = flow[:, 1439:1799]
+error = previous - actual
+print(actual.shape, round(np.abs(error).mean(), 2), round(np.sqrt((error ** 2).mean()), 2))</code></pre></div>
+<details class="question"><summary>先写下两个轴和误差单位，再核对结果</summary><p><strong>(276, 360)　50.67　101.02</strong>。共 99,360 个站点与时间片组合，MAE 为 50.67 人，RMSE 为 101.02 人。每天 05:00 的上一列来自前一个收录工作日 22:45 开始的时间片，留出周共有 5 个这样的日首目标。试用上一工作日同时段作基线，保持相同的测试目标。</p></details>
+<p><a href="#slide-rail-74">查 WMAPE 在零客流时的分母</a> · <a href="#lab-metro">比较基线与训练模型</a></p></article>
+
+<article class="card teaching" id="framework-table"><h3>同一实验在两个框架中怎么看</h3>
+<div class="tablebox"><table><thead><tr><th scope="col">检查点</th><th scope="col">PyTorch</th><th scope="col">TensorFlow / Keras</th></tr></thead><tbody>
+<tr><th scope="row">西直门一维卷积</th><td>(B, 1, 72)，时间在末轴</td><td>(B, 72, 1)，时间在中间轴</td></tr>
+<tr><th scope="row">LSTM 测试</th><td>切到 eval()，在 no_grad() 内预测</td><td>调用 net(test1, training=False)</td></tr>
+<tr><th scope="row">还原后的回归误差</th><td colspan="2">预测和标签按同一缩放参数还原，形状与目标索引对齐后再计算 MAE、RMSE。</td></tr>
+<tr><th scope="row">地铁权重读回</th><td>使用本版训练得到的 best.pth</td><td>使用本版训练得到的 best.weights.h5</td></tr>
+</tbody></table></div><p>用一批输入写出哪个轴代表时间。<a href="#lab-cnn">查看本版卷积实验</a> · <a href="https://richardlsq.github.io/traffic-ai-handbook/#lab-cnn">在线对照另一版同一实验</a></p>
+</article></section>
+
 <section aria-labelledby="python-title" class="section" id="python">
-<div class="section-title"><span class="chapter-num">1.1–1.9</span><h2 id="python-title">Python 基础知识</h2></div>
+<div class="section-title"><span class="chapter-num">1.1–1.9</span><h2 id="python-title">Python 基础知识</h2> <a class="peer-link" href="https://richardlsq.github.io/traffic-ai-handbook/#python">另一框架同章（在线）</a></div>
 <div class="lecture-body">
 <p class="lead">从一条客流记录出发，学习如何表达字段、清理报表、构造数值矩阵，并按任务选择统计与建模工具。</p><p class="slide-jump"><a href="#slides-python-title">跳到本章逐页讲义</a></p>
 <article class="card teaching lesson" aria-labelledby="python-records">
@@ -672,8 +740,11 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <p>读写示例将生成文件集中保存到 Notebook 目录下的 <code>输出文件/</code>。分类示例使用分层切分，时间序列回归的移动平均只使用预测时点之前的观测。</p>
 <div class="card">
 <h3>快速验收与练习</h3>
-<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">'课程工具/快速验收.py'</span> <span class="n">python</span>
-<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">快速验收失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span></code></pre></div>
+<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">&#39;课程工具/快速验收.py&#39;</span> <span class="n">python</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;快速验收失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span></code></pre></div>
 <p><strong>验收</strong> 输出 <code>PASS python</code>，表示 CSV 为 <code>(5, 3)</code>、<code>Sheet1</code> 可读、矩阵逆与 MAE 检查通过。</p>
 <p><strong>练习</strong> 用 NumPy 与 Pandas 分别读取 <code>test.csv</code>，算每列和并检查一致。任选一天的客流工作簿，核对首个纳入时段是 05:30–05:45，解释按列拼接两天后为何保持站点行数。</p>
 </div>
@@ -694,7 +765,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </details>
 </section>
 <section aria-labelledby="tensorflow-title" class="section" id="tensorflow">
-<div class="section-title"><span class="chapter-num">2.1–2.4</span><h2 id="tensorflow-title">深度学习基础</h2></div>
+<div class="section-title"><span class="chapter-num">2.1–2.4</span><h2 id="tensorflow-title">深度学习基础</h2> <a class="peer-link" href="https://richardlsq.github.io/traffic-ai-handbook/#pytorch">另一框架同章（在线）</a></div>
 <div class="lecture-body">
 <p class="lead">认清样本、张量轴和目标之间的关系，再沿着一个批次理解网络层、损失和参数更新。</p><p class="slide-jump"><a href="#framework-steps-title">跳到框架实操步骤</a></p>
 <article class="card teaching lesson" aria-labelledby="tf-tensors">
@@ -765,8 +836,11 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <div class="links"> <a href="#src-tensorflow-tensor-cell-69">设备选择</a> <a href="#src-tensorflow-model-cell-31">组合模型</a> <a href="#src-tensorflow-activation-cell-31">Leaky ReLU 对照</a></div>
 <div class="card" style="margin-top:1rem">
 <h3>快速验收与练习</h3>
-<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">'课程工具/快速验收.py'</span> <span class="n">tensorflow</span>
-<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">快速验收失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span></code></pre></div>
+<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">&#39;课程工具/快速验收.py&#39;</span> <span class="n">tensorflow</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;快速验收失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span></code></pre></div>
 <p><strong>验收</strong> 打印 <code>PASS tensorflow</code>，表示四份 Notebook 的张量、批次、模型形状和激活函数检查通过。</p>
 <details>
 <summary>TensorFlow 基础分节练习</summary>
@@ -782,7 +856,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </details>
 </section>
 <section aria-labelledby="bp-title" class="section" id="bp">
-<div class="section-title"><span class="chapter-num">3.1</span><h2 id="bp-title">反向传播</h2></div>
+<div class="section-title"><span class="chapter-num">3.1</span><h2 id="bp-title">反向传播</h2> <a class="peer-link" href="https://richardlsq.github.io/traffic-ai-handbook/#bp">另一框架同章（在线）</a></div>
 <div class="lecture-body">
 <p class="lead">从一张小网络手算前向、误差和权重更新，理解链式法则如何把最终损失传回每个参数。</p><p class="slide-jump"><a href="#slides-bp-title">跳到本章逐页讲义</a></p>
 <article class="card teaching lesson" aria-labelledby="bp-ppt-example">
@@ -948,15 +1022,18 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <p>概率裁剪避免极端预测值让对数损失出现 <code>log(0)</code>。练习需要从干净内核顺序执行，先运行初始化函数，再运行课后参数对照。</p>
 <div class="links"><a href="#src-bp">完整反向传播代码</a> <a href="#src-exercise">完整练习代码</a> </div>
 <div class="card" style="margin-top:1rem"><h3>快速验收与练习</h3>
-<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">'课程工具/快速验收.py'</span> <span class="n">bp</span>
-<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">快速验收失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span></code></pre></div>
+<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">&#39;课程工具/快速验收.py&#39;</span> <span class="n">bp</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;快速验收失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span></code></pre></div>
 <p><strong>验收</strong> 打印 <code>PASS bp</code>，共 800 个测试标签，训练损失有限且末轮低于首轮。</p>
 <p><strong>练习</strong> 先固定一个小批样本和参数，用中心差分验证任意一个权重的梯度。取 <code>ε=10⁻⁵</code>，与解析梯度的差值应小于 <code>10⁻⁵</code>。</p></div>
 </div>
 </details>
 </section>
 <section aria-labelledby="rnn-title" class="section" id="rnn">
-<div class="section-title"><span class="chapter-num">3.2</span><h2 id="rnn-title">循环神经网络</h2></div>
+<div class="section-title"><span class="chapter-num">3.2</span><h2 id="rnn-title">循环神经网络</h2> <a class="peer-link" href="https://richardlsq.github.io/traffic-ai-handbook/#rnn">另一框架同章（在线）</a></div>
 <div class="lecture-body">
 <p class="lead">把循环沿时间展开，再用 LSTM 的三个门解释序列记忆与单站短时预测。</p><p class="slide-jump"><a href="#slides-rnn-title">跳到本章逐页讲义</a></p>
 <article class="card teaching lesson" aria-labelledby="rnn-timeline">
@@ -1093,7 +1170,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </article>
 <article class="card">
 <h3>测试协议</h3>
-<p>归一化参数只用训练窗口覆盖的观测拟合。在 <code>eval()</code> 和 <code>no_grad()</code> 下只执行一次预测，单独保存输出。反归一化后平方误差取一次均值。</p>
+<p>归一化参数只用训练窗口覆盖的观测拟合。调用 <code>net(test1, training=False)</code> 得到推理模式下的一次预测，将输出保存并复用于各项误差计算。反归一化后平方误差取一次均值。</p>
 <p>200 轮后，测试 MSE 为 <strong>133,445.69 人²</strong>，RMSE 为 <strong>365.30 人</strong>。沿用上一真实观测的 MSE 为 476,672.15 人²。</p>
 </article>
 </div>
@@ -1113,15 +1190,18 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Last observation MSE (people²): </span><span class="si">{</span><span class="n">persistence_mse</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></code></pre></div>
 <div class="links"><a href="#src-rnn-cell-12">训练段归一化</a> <a href="#src-rnn">完整 LSTM 代码</a> </div>
 <div class="card" style="margin-top:1rem"><h3>快速验收与练习</h3>
-<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">'课程工具/快速验收.py'</span> <span class="n">rnn</span>
-<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">快速验收失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span></code></pre></div>
+<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">&#39;课程工具/快速验收.py&#39;</span> <span class="n">rnn</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;快速验收失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span></code></pre></div>
 <p><strong>验收</strong> 打印 <code>PASS rnn</code>。只训练一轮并生成 269 条预测，测试输入和输出形状分别为 <code>(269,1,5)</code> 和 <code>(269,1,1)</code>。</p>
 <p><strong>练习</strong> 用原始量纲的预测和标签独立计算 MSE，并验证它约等于归一化 MSE 乘以训练集极差平方。将同一 MSE 开方，应得到 RMSE。</p></div>
 </div>
 </details>
 </section>
 <section aria-labelledby="cnn-title" class="section" id="cnn">
-<div class="section-title"><span class="chapter-num">3.3</span><h2 id="cnn-title">卷积神经网络</h2></div>
+<div class="section-title"><span class="chapter-num">3.3</span><h2 id="cnn-title">卷积神经网络</h2> <a class="peer-link" href="https://richardlsq.github.io/traffic-ai-handbook/#cnn">另一框架同章（在线）</a></div>
 <div class="lecture-body">
 <p class="lead">用课件里的数字矩阵看卷积核怎样滑动，再把同样的局部计算用于客流序列和图像。</p><p class="slide-jump"><a href="#slides-cnn-title">跳到本章逐页讲义</a></p>
 <article class="card teaching lesson" aria-labelledby="cnn-convolution-board">
@@ -1274,15 +1354,18 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <div class="note"><p>1D CNN 从一个固定起点递归预测 300 步。LSTM 的测试按时间滚动使用已观测的真实历史，且输入 CSV 不同。两节分数分别对应各自任务。</p></div>
 <div class="links"><a href="#src-cnn">完整 CNN 代码</a> </div>
 <div class="card" style="margin-top:1rem"><h3>快速验收与练习</h3>
-<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">'课程工具/快速验收.py'</span> <span class="n">cnn</span>
-<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">快速验收失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span></code></pre></div>
+<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">&#39;课程工具/快速验收.py&#39;</span> <span class="n">cnn</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;快速验收失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span></code></pre></div>
 <p><strong>验收</strong> 打印 <code>PASS cnn</code>。1D 产生 <code>(1,1)</code>，二维模型对一批 64 张 MNIST 图像返回 <code>(64,10)</code>，全程使用本地数据。</p>
 <p><strong>练习</strong> 取同一个训练好的 1D 模型，分别用固定起点递归和每步加入真实历史的方式预测前 3 个测试点。检查两种方式的第一步预测一致，并说明第二步的窗口最后一个值分别来自哪里。</p></div>
 </div>
 </details>
 </section>
 <section aria-labelledby="gcn-title" class="section" id="gcn">
-<div class="section-title"><span class="chapter-num">3.4</span><h2 id="gcn-title">图卷积神经网络</h2></div>
+<div class="section-title"><span class="chapter-num">3.4</span><h2 id="gcn-title">图卷积神经网络</h2> <a class="peer-link" href="https://richardlsq.github.io/traffic-ai-handbook/#gcn">另一框架同章（在线）</a></div>
 <div class="lecture-body">
 <p class="lead">从邻接矩阵理解节点怎样读取自己的历史和邻居的特征，并应用到深圳路网。</p><p class="slide-jump"><a href="#slides-gcn-title">跳到本章逐页讲义</a></p>
 <article class="card teaching lesson" aria-labelledby="gcn-degree">
@@ -1405,28 +1488,33 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <p class="links"><a href="#src-road-model">路速模型</a> <a href="#src-road-dataset">窗口和切分</a> </p>
 </article>
 <div class="snippet"><div class="snippet-head"><span>PowerShell · 在课程根目录运行路速与节点分类</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 在课程根目录运行路速与节点分类" tabindex="0"><code><span class="p">&amp;</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s1">'先完成环境与运行入口中的解释器设置'</span> <span class="p">}</span>
-    <span class="k">function</span> <span class="nb">Invoke-CourseStep</span> <span class="p">{</span>
-        <span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="nv">@args</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">课程命令失败，停止本次复跑，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
     <span class="p">}</span>
-    <span class="nv">$run</span> <span class="p">=</span> <span class="nb">Join-Path</span> <span class="s1">'课程输出'</span> <span class="p">(</span><span class="s1">'run-'</span> <span class="p">+</span> <span class="no">[guid]</span><span class="p">:</span><span class="p">:</span><span class="n">NewGuid</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="n">ToString</span><span class="p">(</span><span class="s1">'N'</span><span class="p">)</span><span class="p">)</span>
-    <span class="nv">$road</span> <span class="p">=</span> <span class="s1">'解压代码/人工智能基础4--图卷积神经网络代码/3.4.3'</span>
-    <span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">road/example.py</span><span class="s2">"</span> <span class="p">-</span><span class="n">-output</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/合成图/training.csv</span><span class="s2">"</span>
-    <span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">road/main.py</span><span class="s2">"</span> <span class="p">-</span><span class="n">-epochs</span> <span class="n">80</span> <span class="p">-</span><span class="n">-patience</span> <span class="n">15</span> <span class="p">-</span><span class="n">-lr</span> <span class="n">0</span><span class="p">.</span><span class="n">001</span> <span class="p">-</span><span class="n">-batch</span><span class="n">-size</span> <span class="n">32</span> <span class="p">-</span><span class="n">-holdout</span><span class="n">-days</span> <span class="n">5</span> <span class="p">-</span><span class="n">-seed</span> <span class="n">42</span> <span class="p">-</span><span class="n">-device</span> <span class="n">cpu</span> <span class="p">-</span><span class="n">-output</span><span class="n">-dir</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/路速</span><span class="s2">"</span>
-    <span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">road/main_predict.py</span><span class="s2">"</span> <span class="p">-</span><span class="n">-checkpoint</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/路速/best.weights.h5</span><span class="s2">"</span> <span class="p">-</span><span class="n">-device</span> <span class="n">cpu</span>
-    <span class="nb">Write-Host</span> <span class="s2">"</span><span class="s2">输出目录 </span><span class="s2">$</span><span class="s2">run</span><span class="s2">"</span>
+<span class="k">function</span> <span class="nb">Invoke-CourseStep</span> <span class="p">{</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="nv">@args</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;课程命令失败，停止本次复跑，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span>
+<span class="p">}</span>
+<span class="nv">$run</span> <span class="p">=</span> <span class="nb">Join-Path</span> <span class="s1">&#39;课程输出&#39;</span> <span class="p">(</span><span class="s1">&#39;run-&#39;</span> <span class="p">+</span> <span class="no">[guid]</span><span class="p">::</span><span class="n">NewGuid</span><span class="p">().</span><span class="n">ToString</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">))</span>
+<span class="nv">$road</span> <span class="p">=</span> <span class="s1">&#39;解压代码/人工智能基础4--图卷积神经网络代码/3.4.3&#39;</span>
+<span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">&quot;$road/example.py&quot;</span> <span class="p">-</span><span class="n">-output</span> <span class="s2">&quot;$run/合成图/training.csv&quot;</span>
+<span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">&quot;$road/main.py&quot;</span> <span class="p">-</span><span class="n">-epochs</span> <span class="n">80</span> <span class="p">-</span><span class="n">-patience</span> <span class="n">15</span> <span class="p">-</span><span class="n">-lr</span> <span class="n">0</span><span class="p">.</span><span class="n">001</span> <span class="p">-</span><span class="n">-batch-size</span> <span class="n">32</span> <span class="p">-</span><span class="n">-holdout-days</span> <span class="n">5</span> <span class="p">-</span><span class="n">-seed</span> <span class="n">42</span> <span class="p">-</span><span class="n">-device</span> <span class="n">cpu</span> <span class="p">-</span><span class="n">-output-dir</span> <span class="s2">&quot;$run/路速&quot;</span>
+<span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">&quot;$road/main_predict.py&quot;</span> <span class="p">-</span><span class="n">-checkpoint</span> <span class="s2">&quot;$run/路速/best.weights.h5&quot;</span> <span class="p">-</span><span class="n">-device</span> <span class="n">cpu</span>
+<span class="nb">Write-Host</span> <span class="s2">&quot;输出目录 $run&quot;</span>
 <span class="p">}</span></code></pre></div>
 <div class="card" style="margin-top:1rem"><h3>快速验收与练习</h3>
-<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">'课程工具/快速验收.py'</span> <span class="n">gcn</span>
-<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">快速验收失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span></code></pre></div>
+<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">&#39;课程工具/快速验收.py&#39;</span> <span class="n">gcn</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;快速验收失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span></code></pre></div>
 <p><strong>验收</strong> NumPy 示例输出 <code>(4,3)</code>。路速推理输出 <code>PASS gcn</code>，生成 JSON 与 NPZ，预测形状为 <code>(360,156,1)</code>。</p>
 <p><strong>练习</strong> 在四节点示例中逐一修改传播前的自环设置，分别重算度和输出，检查两次输出都为 <code>(4,3)</code> 且数值有所变化。说明哪个矩阵变化导致节点特征自身的权重改变。</p></div>
 </div>
 </details>
 </section>
 <section aria-labelledby="metro-title" class="section" id="metro">
-<div class="section-title"><span class="chapter-num">案例</span><h2 id="metro-title">地铁客流预测</h2></div>
+<div class="section-title"><span class="chapter-num">案例</span><h2 id="metro-title">地铁客流预测</h2> <a class="peer-link" href="https://richardlsq.github.io/traffic-ai-handbook/#metro">另一框架同章（在线）</a></div>
 <div class="lecture-body">
 <p class="lead">从进站、OD 和断面等运营问题出发，学习 AFC 数据如何变成时间序列，以及怎样预测全网下一时段进站流。</p><p class="slide-jump"><a href="#slides-metro-title">跳到本章逐页讲义</a></p>
 <article class="card teaching lesson" aria-labelledby="metro-tasks">
@@ -1755,7 +1843,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </section>
 </div>
 <details class="card history lab-panel" id="lab-metro"><summary>配套实验 · 地铁数据、训练命令与输入对照</summary>
-<div class="lab-body"><p>整包已附训练数据和<a href="#src-analysis">地铁误差分析脚本</a>。运行本章命令可比较两种输入设置，并查看按站点和时段汇总的误差。</p><div class="note" id="metro-data-source">
+<div class="lab-body"><p><a href="#src-metro-study">打开或下载分步地铁实验</a>。先复算 276 站的基线，再用包内西直门 72 个时间片的参考预测讨论误差；节选与来源配置在地铁项目的 <code>data/参考预测_西直门.csv</code>、<code>data/参考预测_说明.json</code>。本版为 TensorFlow，测试全量为 99,360 个站点与时间片组合。</p><p>整包已附训练数据和<a href="#src-analysis">地铁误差分析脚本</a>。运行本章命令可比较两种输入设置，并查看按站点和时段汇总的误差。</p><div class="note" id="metro-data-source">
 <h3>北京地铁客流数据（MetroBJ2016）</h3>
 <p>根据张金雷的课程课件《人工智能在轨道交通刷卡数据的应用综述及实战》第 41、42、54 页，案例取自北京地铁 2016 年 2 月 29 日至 4 月 1 日的 25 个工作日，原始自动售检票（AFC）记录约 1.3 亿条。每天 05:00–23:00，每 15 分钟汇总一次，共 72 个时间片。进站和出站矩阵各为 276 站 × 1,800 时间片，邻接矩阵为 276 × 276。</p>
 <p>包内的 <code>in_15min.csv</code>、<code>out_15min.csv</code> 和 <code>adjacency.csv</code> 与张金雷等人公开仓库对应文件逐字节一致。两天合成刷卡样例供聚合练习使用。</p>
@@ -1798,29 +1886,33 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <p>指定 <code>--inflow-only</code> 时，第二通道为零，模型在训练和预测阶段仅读取进站数据。预测入口从权重读回该设置。</p>
 <p class="links"><a href="#src-metro-dataset">地铁窗口与切分</a> <a href="#src-metro-model">模型与通道融合</a></p>
 </article>
-</div><details class="card history"><summary>可选实验 · 刷卡记录聚合</summary><p>示例使用随包的两份合成刷卡记录。生成的矩阵用来练习聚合，预测训练从课程提供的进出站矩阵开始。</p><div class="snippet"><div class="snippet-head"><span>PowerShell · 预处理示例</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 预处理示例" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s1">'先完成环境与运行入口中的解释器设置'</span> <span class="p">}</span>
-<span class="nv">$metro</span> <span class="p">=</span> <span class="s1">'解压代码/案例实战1--人工智能与轨道交通代码/subway flow prediction_for book'</span>
-<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">metro/data_preprocess/提取客流时间序列.py</span><span class="s2">"</span> <span class="p">-</span><span class="n">-output</span><span class="n">-dir</span> <span class="s1">'课程输出/预处理'</span>
-<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">预处理失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span></code></pre></div></details>
+</div><details class="card history"><summary>可选实验 · 刷卡记录聚合</summary><p>示例使用随包的两份合成刷卡记录。生成的矩阵用来练习聚合，预测训练从课程提供的进出站矩阵开始。</p><div class="snippet"><div class="snippet-head"><span>PowerShell · 预处理示例</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 预处理示例" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="nv">$metro</span> <span class="p">=</span> <span class="s1">&#39;解压代码/案例实战1--人工智能与轨道交通代码/subway flow prediction_for book&#39;</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">&quot;$metro/data_preprocess/提取客流时间序列.py&quot;</span> <span class="p">-</span><span class="n">-output-dir</span> <span class="s1">&#39;课程输出/预处理&#39;</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;预处理失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span></code></pre></div></details>
 <div class="snippet"><div class="snippet-head"><span>PowerShell · 在课程根目录运行地铁案例</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 在课程根目录运行地铁案例" tabindex="0"><code><span class="p">&amp;</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s1">'先完成环境与运行入口中的解释器设置'</span> <span class="p">}</span>
-    <span class="k">function</span> <span class="nb">Invoke-CourseStep</span> <span class="p">{</span>
-        <span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="nv">@args</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">课程命令失败，停止本次复跑，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
     <span class="p">}</span>
-    <span class="nv">$run</span> <span class="p">=</span> <span class="nb">Join-Path</span> <span class="s1">'课程输出'</span> <span class="p">(</span><span class="s1">'run-'</span> <span class="p">+</span> <span class="no">[guid]</span><span class="p">:</span><span class="p">:</span><span class="n">NewGuid</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="n">ToString</span><span class="p">(</span><span class="s1">'N'</span><span class="p">)</span><span class="p">)</span>
-    <span class="nv">$metro</span> <span class="p">=</span> <span class="s1">'解压代码/案例实战1--人工智能与轨道交通代码/subway flow prediction_for book'</span>
-    <span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">metro/main.py</span><span class="s2">"</span> <span class="p">-</span><span class="n">-epochs</span> <span class="n">12</span> <span class="p">-</span><span class="n">-patience</span> <span class="n">12</span> <span class="p">-</span><span class="n">-lr</span> <span class="n">0</span><span class="p">.</span><span class="n">001</span> <span class="p">-</span><span class="n">-batch</span><span class="n">-size</span> <span class="n">32</span> <span class="p">-</span><span class="n">-holdout</span><span class="n">-days</span> <span class="n">5</span> <span class="p">-</span><span class="n">-seed</span> <span class="n">42</span> <span class="p">-</span><span class="n">-device</span> <span class="n">auto</span> <span class="p">-</span><span class="n">-output</span><span class="n">-dir</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/地铁双输入</span><span class="s2">"</span>
-    <span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">metro/main.py</span><span class="s2">"</span> <span class="p">-</span><span class="n">-inflow</span><span class="n">-only</span> <span class="p">-</span><span class="n">-epochs</span> <span class="n">12</span> <span class="p">-</span><span class="n">-patience</span> <span class="n">12</span> <span class="p">-</span><span class="n">-lr</span> <span class="n">0</span><span class="p">.</span><span class="n">001</span> <span class="p">-</span><span class="n">-batch</span><span class="n">-size</span> <span class="n">32</span> <span class="p">-</span><span class="n">-holdout</span><span class="n">-days</span> <span class="n">5</span> <span class="p">-</span><span class="n">-seed</span> <span class="n">42</span> <span class="p">-</span><span class="n">-device</span> <span class="n">auto</span> <span class="p">-</span><span class="n">-output</span><span class="n">-dir</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/地铁仅进站</span><span class="s2">"</span>
-    <span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">metro/main_predict.py</span><span class="s2">"</span> <span class="p">-</span><span class="n">-checkpoint</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/地铁双输入/best.weights.h5</span><span class="s2">"</span> <span class="p">-</span><span class="n">-device</span> <span class="n">auto</span>
-    <span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">metro/main_predict.py</span><span class="s2">"</span> <span class="p">-</span><span class="n">-checkpoint</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/地铁仅进站/best.weights.h5</span><span class="s2">"</span> <span class="p">-</span><span class="n">-device</span> <span class="n">auto</span>
-    <span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">"</span><span class="s2">课程工具/分析误差.py</span><span class="s2">"</span> <span class="p">`</span>
-        <span class="p">-</span><span class="n">-dual</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/地铁双输入/test/predictions.npz</span><span class="s2">"</span> <span class="p">`</span>
-        <span class="p">-</span><span class="n">-inflow</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/地铁仅进站/test/predictions.npz</span><span class="s2">"</span> <span class="p">`</span>
-        <span class="p">-</span><span class="n">-flow</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">metro/data/in_15min.csv</span><span class="s2">"</span> <span class="p">`</span>
-        <span class="p">-</span><span class="n">-station</span><span class="n">-table</span> <span class="s2">"</span><span class="s2">解压代码/人工智能基础3--卷积神经网络代码/人工智能基础3.3+卷积神经网络/CNN/15min_in.csv</span><span class="s2">"</span> <span class="p">`</span>
-        <span class="p">-</span><span class="n">-output</span><span class="n">-dir</span> <span class="s2">"</span><span class="s2">$</span><span class="s2">run/地铁误差分析</span><span class="s2">"</span>
-    <span class="nb">Write-Host</span> <span class="s2">"</span><span class="s2">输出目录 </span><span class="s2">$</span><span class="s2">run</span><span class="s2">"</span>
+<span class="k">function</span> <span class="nb">Invoke-CourseStep</span> <span class="p">{</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="nv">@args</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;课程命令失败，停止本次复跑，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span>
+<span class="p">}</span>
+<span class="nv">$run</span> <span class="p">=</span> <span class="nb">Join-Path</span> <span class="s1">&#39;课程输出&#39;</span> <span class="p">(</span><span class="s1">&#39;run-&#39;</span> <span class="p">+</span> <span class="no">[guid]</span><span class="p">::</span><span class="n">NewGuid</span><span class="p">().</span><span class="n">ToString</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">))</span>
+<span class="nv">$metro</span> <span class="p">=</span> <span class="s1">&#39;解压代码/案例实战1--人工智能与轨道交通代码/subway flow prediction_for book&#39;</span>
+<span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">&quot;$metro/main.py&quot;</span> <span class="p">-</span><span class="n">-epochs</span> <span class="n">12</span> <span class="p">-</span><span class="n">-patience</span> <span class="n">12</span> <span class="p">-</span><span class="n">-lr</span> <span class="n">0</span><span class="p">.</span><span class="n">001</span> <span class="p">-</span><span class="n">-batch-size</span> <span class="n">32</span> <span class="p">-</span><span class="n">-holdout-days</span> <span class="n">5</span> <span class="p">-</span><span class="n">-seed</span> <span class="n">42</span> <span class="p">-</span><span class="n">-device</span> <span class="n">auto</span> <span class="p">-</span><span class="n">-output-dir</span> <span class="s2">&quot;$run/地铁双输入&quot;</span>
+<span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">&quot;$metro/main.py&quot;</span> <span class="p">-</span><span class="n">-inflow-only</span> <span class="p">-</span><span class="n">-epochs</span> <span class="n">12</span> <span class="p">-</span><span class="n">-patience</span> <span class="n">12</span> <span class="p">-</span><span class="n">-lr</span> <span class="n">0</span><span class="p">.</span><span class="n">001</span> <span class="p">-</span><span class="n">-batch-size</span> <span class="n">32</span> <span class="p">-</span><span class="n">-holdout-days</span> <span class="n">5</span> <span class="p">-</span><span class="n">-seed</span> <span class="n">42</span> <span class="p">-</span><span class="n">-device</span> <span class="n">auto</span> <span class="p">-</span><span class="n">-output-dir</span> <span class="s2">&quot;$run/地铁仅进站&quot;</span>
+<span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">&quot;$metro/main_predict.py&quot;</span> <span class="p">-</span><span class="n">-checkpoint</span> <span class="s2">&quot;$run/地铁双输入/best.weights.h5&quot;</span> <span class="p">-</span><span class="n">-device</span> <span class="n">auto</span>
+<span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">&quot;$metro/main_predict.py&quot;</span> <span class="p">-</span><span class="n">-checkpoint</span> <span class="s2">&quot;$run/地铁仅进站/best.weights.h5&quot;</span> <span class="p">-</span><span class="n">-device</span> <span class="n">auto</span>
+<span class="nb">Invoke-CourseStep</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s2">&quot;课程工具/分析误差.py&quot;</span> <span class="p">`</span>
+<span class="p">-</span><span class="n">-dual</span> <span class="s2">&quot;$run/地铁双输入/test/predictions.npz&quot;</span> <span class="p">`</span>
+<span class="p">-</span><span class="n">-inflow</span> <span class="s2">&quot;$run/地铁仅进站/test/predictions.npz&quot;</span> <span class="p">`</span>
+<span class="p">-</span><span class="n">-flow</span> <span class="s2">&quot;$metro/data/in_15min.csv&quot;</span> <span class="p">`</span>
+<span class="p">-</span><span class="n">-station-table</span> <span class="s2">&quot;解压代码/人工智能基础3--卷积神经网络代码/人工智能基础3.3+卷积神经网络/CNN/15min_in.csv&quot;</span> <span class="p">`</span>
+<span class="p">-</span><span class="n">-output-dir</span> <span class="s2">&quot;$run/地铁误差分析&quot;</span>
+<span class="nb">Write-Host</span> <span class="s2">&quot;输出目录 $run&quot;</span>
 <span class="p">}</span></code></pre></div>
 <h3>出站输入对照</h3>
 <p>对照训练使用同一切分（训练 963／验证 107／测试 360 个窗口）、固定种子 42、batch 32、Adam 学习率 0.001、12 轮。两组均按验证 MSE 选择权重。</p>
@@ -1833,8 +1925,11 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </figure>
 <div class="links"><a href="#src-metro-workflow">地铁训练和评估实现</a> <a href="#src-analysis">误差分析脚本</a> </div>
 <div class="card" style="margin-top:1rem"><h3>快速验收与练习</h3>
-<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">'课程工具/快速验收.py'</span> <span class="n">metro</span>
-<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">快速验收失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span></code></pre></div>
+<div class="snippet"><div class="snippet-head"><span>PowerShell · 本章快速验收</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 本章快速验收" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">&#39;课程工具/快速验收.py&#39;</span> <span class="n">metro</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;快速验收失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span></code></pre></div>
 <p><strong>验收</strong> 打印 <code>PASS metro</code>。生成 <code>metrics.json</code> 和 <code>predictions.npz</code>，记录 <code>inputs=["inflow"]</code>，预测形状为 <code>(360,276,1)</code>。</p>
 <p><strong>练习</strong> 完成双输入预测后，打开其 <code>test/predictions.npz</code>。分别从 <code>predicted</code> 和 <code>last_observation</code> 减去 <code>actual</code>，重算 RMSE 与 MAE。示例运行中，双输入约为 <code>95.16 / 60.23</code>，基线约为 <code>101.02 / 50.67</code>。按相邻客流变化是否达到 250 人分组，解释两个指标的排序。</p></div>
 </div>
@@ -1877,19 +1972,25 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </div>
 <h3>Notebook 的确切工作目录</h3>
 <p>在下方找到要运行的 Notebook 文件路径。打开课程目录中的 PowerShell，把示例中的路径换成对应条目。启动 JupyterLab 后选择 <strong>Restart Kernel and Run All Cells</strong>。示例环境使用 Python 3.12.16。</p>
-<div class="snippet"><div class="snippet-head"><span>PowerShell · 在选定 notebook 的父目录启动 JupyterLab</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 在选定 notebook 的父目录启动 JupyterLab" tabindex="0"><code><span class="nv">$notebook</span> <span class="p">=</span> <span class="s1">'解压代码/Python基础知识代码/Python代码/Python1.3-1.4/Python1.3-1.4.ipynb'</span>
+<div class="snippet"><div class="snippet-head"><span>PowerShell · 在选定 notebook 的父目录启动 JupyterLab</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 在选定 notebook 的父目录启动 JupyterLab" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="nv">$notebook</span> <span class="p">=</span> <span class="s1">&#39;解压代码/Python基础知识代码/Python代码/Python1.3-1.4/Python1.3-1.4.ipynb&#39;</span>
 <span class="nb">Push-Location</span> <span class="n">-LiteralPath</span> <span class="p">(</span><span class="nb">Split-Path</span> <span class="n">-Parent</span> <span class="nv">$notebook</span><span class="p">)</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span>
 <span class="k">try</span> <span class="p">{</span>
-    <span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-m</span> <span class="n">jupyterlab</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">JupyterLab 启动失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-m</span> <span class="n">jupyterlab</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;JupyterLab 启动失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span>
 <span class="p">}</span> <span class="k">finally</span> <span class="p">{</span>
-    <span class="nb">Pop-Location</span>
+<span class="nb">Pop-Location</span>
 <span class="p">}</span></code></pre></div>
-<div class="card history"><details><summary>展开所有 Notebook 的路径</summary><div aria-label="Notebook 工作目录" class="tablebox" role="region" tabindex="0"><table><thead><tr><th>Notebook</th><th>课程根目录下的文件路径</th></tr></thead><tbody><tr><th scope="row">Python 1.1–1.2 · 数据类型与语句</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.1-1.2.ipynb</code><br/><a href="#src-py-control">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.3–1.4 · 函数、类与文件读写</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.3-1.4/Python1.3-1.4.ipynb</code><br/><a href="#src-py-io">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.5 · NumPy</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.5-Numpy.ipynb</code><br/><a href="#src-py-numpy">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.6 · Pandas</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.6-Pandas/Pandas.ipynb</code><br/><a href="#src-py-pandas">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.7 · SciPy</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.7-SciPy.ipynb</code><br/><a href="#src-py-scipy">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.8–1.9 · scikit-learn 与 Matplotlib</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/python1.8-1.9/1.8-1.9.ipynb</code><br/><a href="#src-py-ml">查看和下载代码</a></td></tr><tr><th scope="row">TensorFlow 2.1 · 张量</th><td class="path"><code>解压代码/TensorFlow基础知识代码/TensorFlow代码/TensorFlow2.1张量介绍.ipynb</code><br/><a href="#src-tensorflow-tensor">查看和下载代码</a></td></tr><tr><th scope="row">TensorFlow 2.2 · tf.data 与时序窗口</th><td class="path"><code>解压代码/TensorFlow基础知识代码/TensorFlow代码/TensorFlow2.2数据模块.ipynb</code><br/><a href="#src-tensorflow-data">查看和下载代码</a></td></tr><tr><th scope="row">TensorFlow 2.3 · 网络模块</th><td class="path"><code>解压代码/TensorFlow基础知识代码/TensorFlow代码/TensorFlow2.3模型介绍.ipynb</code><br/><a href="#src-tensorflow-model">查看和下载代码</a></td></tr><tr><th scope="row">TensorFlow 2.4 · 激活函数</th><td class="path"><code>解压代码/TensorFlow基础知识代码/TensorFlow代码/TensorFlow2.4激活函数.ipynb</code><br/><a href="#src-tensorflow-activation">查看和下载代码</a></td></tr><tr><th scope="row">反向传播算法</th><td class="path"><code>解压代码/人工智能基础1--反向传播算法代码/人工智能基础3.1反向传播算法.ipynb</code><br/><a href="#src-bp">查看和下载代码</a></td></tr><tr><th scope="row">练习 · 对数几率回归</th><td class="path"><code>解压代码/人工智能基础1--反向传播算法代码/对数几率回归练习.ipynb</code><br/><a href="#src-exercise">查看和下载代码</a></td></tr><tr><th scope="row">循环神经网络 LSTM</th><td class="path"><code>解压代码/人工智能基础2--循环神经网络代码/人工智能基础3.2循环神经网络.ipynb</code><br/><a href="#src-rnn">查看和下载代码</a></td></tr><tr><th scope="row">卷积神经网络 CNN</th><td class="path"><code>解压代码/人工智能基础3--卷积神经网络代码/人工智能基础3.3+卷积神经网络/CNN/CNN.ipynb</code><br/><a href="#src-cnn">查看和下载代码</a></td></tr><tr><th scope="row">NumPy 图卷积</th><td class="path"><code>解压代码/人工智能基础4--图卷积神经网络代码/人工智能基础3.4-图卷积神经网络.ipynb</code><br/><a href="#src-toy">查看和下载代码</a></td></tr></tbody></table></div></details></div>
+<div class="card history"><details><summary>展开所有 Notebook 的路径</summary><div aria-label="Notebook 工作目录" class="tablebox" role="region" tabindex="0"><table><thead><tr><th>Notebook</th><th>课程根目录下的文件路径</th></tr></thead><tbody><tr><th scope="row">地铁基线与误差复算</th><td class="path"><code>解压代码/案例实战1--人工智能与轨道交通代码/subway flow prediction_for book/地铁客流入门与误差复算.ipynb</code><br><a href="#src-metro-study">查看和下载实验</a></td></tr><tr><th scope="row">Python 1.1–1.2 · 数据类型与语句</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.1-1.2.ipynb</code><br/><a href="#src-py-control">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.3–1.4 · 函数、类与文件读写</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.3-1.4/Python1.3-1.4.ipynb</code><br/><a href="#src-py-io">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.5 · NumPy</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.5-Numpy.ipynb</code><br/><a href="#src-py-numpy">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.6 · Pandas</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.6-Pandas/Pandas.ipynb</code><br/><a href="#src-py-pandas">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.7 · SciPy</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/Python1.7-SciPy.ipynb</code><br/><a href="#src-py-scipy">查看和下载代码</a></td></tr><tr><th scope="row">Python 1.8–1.9 · scikit-learn 与 Matplotlib</th><td class="path"><code>解压代码/Python基础知识代码/Python代码/python1.8-1.9/1.8-1.9.ipynb</code><br/><a href="#src-py-ml">查看和下载代码</a></td></tr><tr><th scope="row">TensorFlow 2.1 · 张量</th><td class="path"><code>解压代码/TensorFlow基础知识代码/TensorFlow代码/TensorFlow2.1张量介绍.ipynb</code><br/><a href="#src-tensorflow-tensor">查看和下载代码</a></td></tr><tr><th scope="row">TensorFlow 2.2 · tf.data 与时序窗口</th><td class="path"><code>解压代码/TensorFlow基础知识代码/TensorFlow代码/TensorFlow2.2数据模块.ipynb</code><br/><a href="#src-tensorflow-data">查看和下载代码</a></td></tr><tr><th scope="row">TensorFlow 2.3 · 网络模块</th><td class="path"><code>解压代码/TensorFlow基础知识代码/TensorFlow代码/TensorFlow2.3模型介绍.ipynb</code><br/><a href="#src-tensorflow-model">查看和下载代码</a></td></tr><tr><th scope="row">TensorFlow 2.4 · 激活函数</th><td class="path"><code>解压代码/TensorFlow基础知识代码/TensorFlow代码/TensorFlow2.4激活函数.ipynb</code><br/><a href="#src-tensorflow-activation">查看和下载代码</a></td></tr><tr><th scope="row">反向传播算法</th><td class="path"><code>解压代码/人工智能基础1--反向传播算法代码/人工智能基础3.1反向传播算法.ipynb</code><br/><a href="#src-bp">查看和下载代码</a></td></tr><tr><th scope="row">练习 · 对数几率回归</th><td class="path"><code>解压代码/人工智能基础1--反向传播算法代码/对数几率回归练习.ipynb</code><br/><a href="#src-exercise">查看和下载代码</a></td></tr><tr><th scope="row">循环神经网络 LSTM</th><td class="path"><code>解压代码/人工智能基础2--循环神经网络代码/人工智能基础3.2循环神经网络.ipynb</code><br/><a href="#src-rnn">查看和下载代码</a></td></tr><tr><th scope="row">卷积神经网络 CNN</th><td class="path"><code>解压代码/人工智能基础3--卷积神经网络代码/人工智能基础3.3+卷积神经网络/CNN/CNN.ipynb</code><br/><a href="#src-cnn">查看和下载代码</a></td></tr><tr><th scope="row">NumPy 图卷积</th><td class="path"><code>解压代码/人工智能基础4--图卷积神经网络代码/人工智能基础3.4-图卷积神经网络.ipynb</code><br/><a href="#src-toy">查看和下载代码</a></td></tr></tbody></table></div></details></div>
 <h3 style="margin-top:1.25rem">先做一次快速验收</h3>
 <p>各章的快速验收在 CPU 上执行必要单元格或小批次。路速和地铁各用一轮训练生成权重，再检查预测输出。快速验收用于检查流程、数据和张量形状；完整训练的配置与示例结果见各章。</p>
-<div class="snippet"><div class="snippet-head"><span>PowerShell · 运行全部快速检查</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 运行全部快速检查" tabindex="0"><code><span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">'课程工具/快速验收.py'</span> <span class="n">all</span>
-<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">"</span><span class="s2">快速验收失败，退出码 </span><span class="s2">$</span><span class="s2">LASTEXITCODE</span><span class="s2">"</span> <span class="p">}</span></code></pre></div>
+<div class="snippet"><div class="snippet-head"><span>PowerShell · 运行全部快速检查</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="PowerShell · 运行全部快速检查" tabindex="0"><code><span class="k">if</span> <span class="p">(</span><span class="o">-not</span> <span class="nv">$CoursePython</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$CoursePython</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="s1">&#39;.venv/Scripts/python.exe&#39;</span> <span class="n">-ErrorAction</span> <span class="n">Stop</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">}</span>
+<span class="p">&amp;</span> <span class="nv">$CoursePython</span> <span class="n">-B</span> <span class="n">-X</span> <span class="n">utf8</span> <span class="s1">&#39;课程工具/快速验收.py&#39;</span> <span class="n">all</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$LASTEXITCODE</span> <span class="o">-ne</span> <span class="n">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="s2">&quot;快速验收失败，退出码 $LASTEXITCODE&quot;</span> <span class="p">}</span></code></pre></div>
 <p>每项检查通过后打印 <code>PASS</code>。生成的 Notebook 和预测文件写入 <code>课程输出/快速验收/</code> 下本次运行目录。<a href="#src-smoke">查看快速验收脚本</a></p>
 <div class="note"><p>正文、源码和图表可以单独离线阅读。运行练习时保留整包中的目录结构。</p></div>
 </section>
@@ -1955,7 +2056,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <tbody><tr><th scope="row">北京地铁 MetroBJ2016</th><td><code>in_15min.csv</code>、<code>out_15min.csv</code>、<code>adjacency.csv</code></td><td>张金雷等发布的北京地铁站点客流与邻接数据。包内预测输入与作者仓库同名文件逐字节一致。</td><td><a href="https://github.com/JinleiZhangBJTU/ResNet-LSTM-GCN/tree/78b257bb362d1d0b48bce6fda6250ed67b2e8381">作者仓库</a> · <a href="https://doi.org/10.1109/TITS.2020.3000761">论文</a></td></tr>
 <tr><th scope="row">深圳出租车路速 SZ-taxi</th><td><code>sz_speed-论文数据.csv</code>、<code>sz_adj1.csv</code></td><td>来源为 Ling Zhao 等发布的 T-GCN 数据。邻接矩阵逐字节一致，包内速度表去掉了上游的路段编号表头，数值在舍入精度内一致（最大绝对差小于 10⁻⁷）。</td><td><a href="https://github.com/lehaifeng/T-GCN/tree/e256572736291433f8fe5c5d432b0100184805d5/data">作者数据仓库</a> · <a href="https://arxiv.org/abs/1811.05320">论文</a></td></tr>
 <tr><th scope="row">MNIST 手写数字</th><td><code>4 个 IDX 文件</code></td><td>由 Yann LeCun、Corinna Cortes、Christopher J. C. Burges 整理。包内文件与 CVDF 镜像解压后的四份 IDX 数据逐字节一致。</td><td><a href="https://yann.lecun.com/exdb/mnist/">原始说明</a> · <a href="https://github.com/cvdfoundation/mnist">CVDF GitHub 镜像</a></td></tr>
-<tr><th scope="row">课程配套客流表</th><td><code>15min_in.csv（CNN）</code>、<code>in_15min.csv（Python）</code>、<code>xizhimen.csv</code>、<code>LSTM.csv</code></td><td>来自课程代码附件。CNN 与 Python 的两个多站表分别有 275、276 条站点序列与 MetroBJ2016 进站矩阵一致，另含机场线站点。西直门序列与作者矩阵相应行一致。LSTM 教学序列由课程提供。</td><td><a href="https://github.com/JinleiZhangBJTU/ResNet-LSTM-GCN/tree/78b257bb362d1d0b48bce6fda6250ed67b2e8381">MetroBJ2016 作者仓库</a> · <a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/blob/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9F%BA%E7%A1%803--%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BB%A3%E7%A0%81/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9F%BA%E7%A1%803.3%2B%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/CNN/15min_in.csv">CNN 客流表</a> · <a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/tree/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/Python%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E4%BB%A3%E7%A0%81/Python%E4%BB%A3%E7%A0%81/python1.8-1.9">Python 客流样表</a> · <a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/blob/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9F%BA%E7%A1%802--%E5%BE%AA%E7%8E%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BB%A3%E7%A0%81/LSTM.csv">LSTM 教学序列</a></td></tr>
+<tr><th scope="row">课程配套客流表</th><td><code>15min_in.csv（CNN）</code>、<code>in_15min.csv（Python）</code>、<code>xizhimen.csv</code>、<code>LSTM.csv</code></td><td>来自课程代码附件。CNN 表按时间为行。其前 276 列转置后与 MetroBJ2016 进站矩阵逐值一致，末两列为 T3 航站楼与 T2 航站楼。Python 多站表也有 276 条匹配序列。西直门序列与作者矩阵相应行一致。LSTM 教学序列由课程提供。</td><td><a href="https://github.com/JinleiZhangBJTU/ResNet-LSTM-GCN/tree/78b257bb362d1d0b48bce6fda6250ed67b2e8381">MetroBJ2016 作者仓库</a> · <a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/blob/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9F%BA%E7%A1%803--%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BB%A3%E7%A0%81/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9F%BA%E7%A1%803.3%2B%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/CNN/15min_in.csv">CNN 客流表</a> · <a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/tree/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/Python%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E4%BB%A3%E7%A0%81/Python%E4%BB%A3%E7%A0%81/python1.8-1.9">Python 客流样表</a> · <a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/blob/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9F%BA%E7%A1%802--%E5%BE%AA%E7%8E%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BB%A3%E7%A0%81/LSTM.csv">LSTM 教学序列</a></td></tr>
 <tr><th scope="row">Python 教学文件与分时段客运量报表</th><td><code>test.csv</code>、<code>test.txt</code>、<code>table.xlsx</code>、<code>test1.CSV</code>、<code>test2.CSV</code>、<code>2017-09-26 和 2017-09-27 的两个 Excel 报表</code></td><td>取自课程 Python 基础知识代码附件，用于文件读写、索引和跨日表格整理。</td><td><a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/tree/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/Python%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E4%BB%A3%E7%A0%81/Python%E4%BB%A3%E7%A0%81/Python1.3-1.4">文件读写样例</a> · <a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/tree/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/Python%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E4%BB%A3%E7%A0%81/Python%E4%BB%A3%E7%A0%81/Python1.6-Pandas">Pandas 样表与报表</a></td></tr>
 <tr><th scope="row">合成刷卡事件</th><td><code>样例_0101.csv</code>、<code>样例_0102.csv</code></td><td>随手册生成的两日合成事件，用于演示刷卡记录分箱及 OD 聚合。</td><td><a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/tree/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/%E6%A1%88%E4%BE%8B%E5%AE%9E%E6%88%981--%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E4%B8%8E%E8%BD%A8%E9%81%93%E4%BA%A4%E9%80%9A%E4%BB%A3%E7%A0%81/subway%20flow%20prediction_for%20book/data_preprocess/data">两天样例</a></td></tr>
 <tr><th scope="row">代码生成的练习数据</th><td><code>双月形样本</code>、<code>正弦序列</code>、<code>合成图</code></td><td>反向传播、时序窗口和节点分类的练习数据由配套代码在运行时生成。</td><td><a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/blob/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9F%BA%E7%A1%801--%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E7%AE%97%E6%B3%95%E4%BB%A3%E7%A0%81/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9F%BA%E7%A1%803.1%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E7%AE%97%E6%B3%95.ipynb">双月形样本代码</a> · <a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/blob/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/TensorFlow%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E4%BB%A3%E7%A0%81/TensorFlow%E4%BB%A3%E7%A0%81/TensorFlow2.2%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9D%97.ipynb">正弦序列代码</a> · <a href="https://github.com/Richardlsq/traffic-ai-handbook-tensorflow/blob/tensorflow-v1.0.0/%E8%A7%A3%E5%8E%8B%E4%BB%A3%E7%A0%81/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9F%BA%E7%A1%804--%E5%9B%BE%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BB%A3%E7%A0%81/3.4.3/example.py">合成图代码</a></td></tr></tbody></table></div>
@@ -1973,7 +2074,7 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </section>
 <section aria-labelledby="source-title" class="section" id="source">
 <div class="section-title"><h2 id="source-title">完整源码</h2></div>
-<p class="lead">每项提供可查看、复制或下载的代码。Notebook 下载版保留代码单元格和原编号，运行说明见各章。训练和分析脚本按项目组织。</p>
+<p class="lead">每项提供可查看、复制或下载的代码。LSTM 和地铁入门 Notebook 含分步提示、操作与答案，其余 Notebook 保留原代码单元编号。训练和分析脚本按项目组织。</p>
 <div aria-label="源码搜索" class="source-controls" role="search">
 <div class="search-line">
 <label for="source-search">搜索源码</label>
@@ -1988,9 +2089,68 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <button aria-pressed="false" class="button" data-filter="analysis" type="button">误差分析</button>
 <button aria-pressed="false" class="button" data-filter="tools" type="button">验收工具</button>
 </div>
-<p class="source-status" id="source-status" role="status">共 47 项可展开源码</p>
+<p class="source-status" id="source-status" role="status">共 48 项可展开源码</p>
 </div>
 <div class="source-list" id="source-list">
+<details class="source-item" id="src-metro-study" data-file-kind="notebook" data-group="notebook" data-filename="地铁客流入门与误差复算.ipynb"><summary><span class="source-title">地铁客流入门与误差复算</span><span class="source-meta">Notebook · 分步实验</span></summary><div class="source-body"><p class="source-path"><span>保存位置 <code>解压代码/案例实战1--人工智能与轨道交通代码/subway flow prediction_for book/地铁客流入门与误差复算.ipynb</code></span> <button class="button" type="button" data-download="source">下载实验 Notebook</button></p><div class="book-notes"><h1>地铁客流入门与误差复算</h1>
+<p>在本文件所在的 subway flow prediction_for book 目录运行。全网基线只需 NumPy；参考预测由本版已保存的模型运行导出。完成后提交全网 MAE、RMSE，以及一个让两种指标排序不同的原因。</p>
+</div>
+<div class="book-notes"><h2>1 · 读数据（单元 1）</h2>
+<p>打开 data/in_15min.csv。预测对象是下一运营时间片各站的进站人数。先猜一行代表什么，再检查形状。</p>
+</div>
+<div class="snippet" id="src-metro-study-cell-1"><div class="snippet-head"><span>单元格 1</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 1"><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+<span class="n">flow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="s2">&quot;in_15min.csv&quot;</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;矩阵（站点，时间片）&quot;</span><span class="p">,</span> <span class="n">flow</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">flow</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">276</span><span class="p">,</span> <span class="mi">1800</span><span class="p">)</span></code></pre></div>
+<div class="book-notes"><h2>2 · 从已知历史造基线（单元 2）</h2>
+<p>用前一个已观测时间片预测下一片。若目标索引为 1440，可用的最后一列是哪一列？最后五个工作日能产生多少个站点与时间片组合？</p>
+</div>
+<div class="snippet" id="src-metro-study-cell-2"><div class="snippet-head"><span>单元格 2</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 2"><code><span class="n">actual</span> <span class="o">=</span> <span class="n">flow</span><span class="p">[:,</span> <span class="mi">1440</span><span class="p">:</span><span class="mi">1800</span><span class="p">]</span>
+<span class="n">previous</span> <span class="o">=</span> <span class="n">flow</span><span class="p">[:,</span> <span class="mi">1439</span><span class="p">:</span><span class="mi">1799</span><span class="p">]</span>
+<span class="n">error</span> <span class="o">=</span> <span class="n">previous</span> <span class="o">-</span> <span class="n">actual</span>
+<span class="n">mae</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">error</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">actual</span><span class="o">.</span><span class="n">size</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> 组，MAE </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> 人，RMSE </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> 人&quot;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">actual</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">previous</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">276</span><span class="p">,</span> <span class="mi">360</span><span class="p">)</span></code></pre></div>
+<div class="book-notes"><details><summary>核对基线及运营日边界</summary>
+<p>99,360 组，MAE 50.67 人，RMSE 101.02 人。1440 的上一列是 1439。每天 05:00 对应的上一列是前一收录工作日 22:45 开始的时间片，测试集有 5 个这样的日首目标。</p>
+</details></div>
+<div class="book-notes"><h2>3 · 从预测节选解释误差（单元 3–4）</h2>
+<p>读取 data/参考预测_西直门.csv。本版节选固定为留出周首个工作日的西直门，72 行；两个模型用相同的真实值。先核对索引和站名，猜想平方误差与绝对误差会如何给模型排序。</p>
+</div>
+<div class="snippet" id="src-metro-study-cell-3"><div class="snippet-head"><span>单元格 3</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 3"><code><span class="k">with</span> <span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="s2">&quot;参考预测_西直门.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8-sig&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">stream</span><span class="p">))</span>
+<span class="n">info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">((</span><span class="n">data</span> <span class="o">/</span> <span class="s2">&quot;参考预测_说明.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;target_index&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+<span class="n">station</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;station_index_zero_based&quot;</span><span class="p">]</span>
+<span class="n">observed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;actual&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;excerpt_elements&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">72</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1440</span><span class="p">,</span> <span class="mi">1512</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">flow</span><span class="p">[</span><span class="n">station</span><span class="p">,</span> <span class="n">targets</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;framework&quot;</span><span class="p">],</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;station&quot;</span><span class="p">],</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;slot_start&quot;</span><span class="p">],</span> <span class="n">rows</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;slot_start&quot;</span><span class="p">])</span></code></pre></div>
+<div class="snippet" id="src-metro-study-cell-4"><div class="snippet-head"><span>单元格 4</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 4"><code><span class="n">errors</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;fields&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">forecast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">field</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">])</span>
+    <span class="n">errors</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">forecast</span> <span class="o">-</span> <span class="n">observed</span>
+    <span class="n">mae</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">errors</span><span class="p">[</span><span class="n">field</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errors</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;excerpt_metrics&quot;</span><span class="p">][</span><span class="n">field</span><span class="p">]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">([</span><span class="n">mae</span><span class="p">,</span> <span class="n">rmse</span><span class="p">],</span> <span class="p">[</span><span class="n">expected</span><span class="p">[</span><span class="s2">&quot;mae&quot;</span><span class="p">],</span> <span class="n">expected</span><span class="p">[</span><span class="s2">&quot;rmse&quot;</span><span class="p">]])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">：MAE </span><span class="si">{</span><span class="n">mae</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> 人，RMSE </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> 人&quot;</span><span class="p">)</span>
+
+<span class="n">sq_gain</span> <span class="o">=</span> <span class="n">errors</span><span class="p">[</span><span class="s2">&quot;previous&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">errors</span><span class="p">[</span><span class="s2">&quot;dual&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+<span class="n">abs_cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">errors</span><span class="p">[</span><span class="s2">&quot;dual&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">errors</span><span class="p">[</span><span class="s2">&quot;previous&quot;</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;平方误差改善最大&quot;</span><span class="p">,</span> <span class="n">sq_gain</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;绝对误差增量最大&quot;</span><span class="p">,</span> <span class="n">abs_cost</span><span class="p">)]:</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">rows</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;slot_start&quot;</span><span class="p">],</span> <span class="s2">&quot;真实人数&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;差值&quot;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">2</span><span class="p">))</span></code></pre></div>
+<div class="book-notes"><h2>4 · 写下解释</h2>
+<p>用单元 4 的两个时间片说明，大误差为何对 RMSE 贡献更大。节选的分母是 72；网页全网表的分母是 99,360。换站、换时段后需要重新计算。进一步练习：把全网基线改成上一收录工作日同时段，保持 1440–1799 的目标不动，再比较两个指标。</p>
+</div></div></details>
 <details class="source-item" data-file-kind="notebook" data-filename="Python1.1-1.2.ipynb" data-group="notebook" id="src-py-control"><summary><span class="source-title">Python 1.1–1.2 · 数据类型与语句</span><span class="source-meta">Notebook · 73 个代码单元格</span></summary><div class="source-body"><p class="source-path"><span>保存位置 <code>解压代码/Python基础知识代码/Python代码/Python1.1-1.2.ipynb</code></span> <button class="button" data-download="source" type="button">下载代码 Notebook</button></p><div class="snippet" id="src-py-control-cell-4"><div class="snippet-head"><span>单元格 4</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 4" tabindex="0"><code><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'</span><span class="s1">physics</span><span class="s1">'</span><span class="p">,</span> <span class="s1">'</span><span class="s1">chemistry</span><span class="s1">'</span><span class="p">,</span> <span class="mi">1997</span><span class="p">,</span> <span class="mi">2000</span><span class="p">]</span><span class="w">
 </span><span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span><span class="w">
 </span><span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="s1">打印：</span><span class="s1">'</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">nums</span><span class="p">)</span></code></pre></div><div class="snippet" id="src-py-control-cell-6"><div class="snippet-head"><span>单元格 6</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 6" tabindex="0"><code><span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span><span class="w">
@@ -3721,32 +3881,60 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 </span><span class="w">
 </span><span class="w">
 </span></code></pre></div></div></details>
-<details class="source-item" data-file-kind="notebook" data-filename="人工智能基础3.2循环神经网络.ipynb" data-group="notebook" id="src-rnn"><summary><span class="source-title">循环神经网络 LSTM</span><span class="source-meta">Notebook · 19 个代码单元格</span></summary><div class="source-body"><p class="source-path"><span>保存位置 <code>解压代码/人工智能基础2--循环神经网络代码/人工智能基础3.2循环神经网络.ipynb</code></span> <button class="button" data-download="source" type="button">下载代码 Notebook</button></p><div class="snippet" id="src-rnn-cell-5"><div class="snippet-head"><span>单元格 5</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 5" tabindex="0"><code><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<details class="source-item" id="src-rnn" data-file-kind="notebook" data-group="notebook" data-filename="人工智能基础3.2循环神经网络.ipynb"><summary><span class="source-title">单站客流的滚动一步预测</span><span class="source-meta">Notebook · 分步实验</span></summary><div class="source-body"><p class="source-path"><span>保存位置 <code>解压代码/人工智能基础2--循环神经网络代码/人工智能基础3.2循环神经网络.ipynb</code></span> <button class="button" type="button" data-download="source">下载实验 Notebook</button></p><div class="book-notes"><h1>单站客流的滚动一步预测</h1>
+<p>在本 Notebook 所在目录运行，确认旁边有 LSTM.csv。学习目标是用已观测的五点历史预测下一点，并在原始人数尺度与上一观测基线比较。从上到下执行；下列编号与网页中的原代码单元对应。</p>
+</div>
+<div class="book-notes"><h2>数据 · 原单元 5–12</h2>
+<p>读入 data 列后，检查有效观测数和字段。文件给出 900 条有序数值。能从这一列确认每条观测的日期和频率吗？</p>
+<details><summary>核对思路</summary>
+<p>文件没有独立时间戳。按观测下标报告切分；缩放的极值只取自训练窗口覆盖的观测。</p>
+</details></div>
+<div class="snippet" id="src-rnn-cell-5"><div class="snippet-head"><span>单元格 5</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 5"><code><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-<span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">set_random_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span></code></pre></div><div class="snippet" id="src-rnn-cell-7"><div class="snippet-head"><span>单元格 7</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 7" tabindex="0"><code><span class="n">data_csv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"./LSTM.csv"</span><span class="p">)</span>
-<span class="n">data_csv</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div><div class="snippet" id="src-rnn-cell-9"><div class="snippet-head"><span>单元格 9</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 9" tabindex="0"><code><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data_csv</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">200</span><span class="p">])</span></code></pre></div><div class="snippet" id="src-rnn-cell-12"><div class="snippet-head"><span>单元格 12</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 12" tabindex="0"><code><span class="n">raw_flow</span> <span class="o">=</span> <span class="n">data_csv</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">set_random_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-7"><div class="snippet-head"><span>单元格 7</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 7"><code><span class="n">data_csv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;./LSTM.csv&quot;</span><span class="p">)</span>
+<span class="n">data_csv</span><span class="o">.</span><span class="n">head</span><span class="p">()</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-9"><div class="snippet-head"><span>单元格 9</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 9"><code><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data_csv</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">200</span><span class="p">])</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-12"><div class="snippet-head"><span>单元格 12</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 12"><code><span class="n">raw_flow</span> <span class="o">=</span> <span class="n">data_csv</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="n">step</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">train_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_flow</span><span class="p">)</span> <span class="o">-</span> <span class="n">step</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.7</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">train_size</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">train_size</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_flow</span><span class="p">)</span> <span class="o">-</span> <span class="n">step</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'需要足够的数据以构造非空的训练集和测试集'</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;需要足够的数据以构造非空的训练集和测试集&#39;</span><span class="p">)</span>
 <span class="n">training_values</span> <span class="o">=</span> <span class="n">raw_flow</span><span class="p">[:</span><span class="n">train_size</span> <span class="o">+</span> <span class="n">step</span><span class="p">]</span>
 <span class="n">min_value</span> <span class="o">=</span> <span class="n">training_values</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 <span class="n">max_value</span> <span class="o">=</span> <span class="n">training_values</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 <span class="n">scale</span> <span class="o">=</span> <span class="n">max_value</span> <span class="o">-</span> <span class="n">min_value</span>
 <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="p">(</span><span class="n">raw_flow</span> <span class="o">-</span> <span class="n">min_value</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span></code></pre></div><div class="snippet" id="src-rnn-cell-14"><div class="snippet-head"><span>单元格 14</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 14" tabindex="0"><code><span class="k">def</span><span class="w"> </span><span class="nf">create_dataset</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="p">(</span><span class="n">raw_flow</span> <span class="o">-</span> <span class="n">min_value</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span></code></pre></div>
+<div class="book-notes"><h2>建窗 · 原单元 14–22</h2>
+<p>画出前两个五点窗口，标出各自的目标。训练有 626 个窗口，第一个测试目标的零基下标是多少？先写下答案，再运行形状检查。</p>
+<details><summary>核对思路</summary>
+<p>首个测试窗口读 626–630，标签是 631。测试张量 (269, 1, 5) 表示 269 个顺次到达的窗口、1 条序列、每步 5 个历史特征。</p>
+</details></div>
+<div class="snippet" id="src-rnn-cell-14"><div class="snippet-head"><span>单元格 14</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 14"><code><span class="k">def</span><span class="w"> </span><span class="nf">create_dataset</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
     <span class="n">windows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">stride_tricks</span><span class="o">.</span><span class="n">sliding_window_view</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">windows</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">windows</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></code></pre></div><div class="snippet" id="src-rnn-cell-16"><div class="snippet-head"><span>单元格 16</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 16" tabindex="0"><code><span class="n">data_X</span><span class="p">,</span> <span class="n">data_Y</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span></code></pre></div><div class="snippet" id="src-rnn-cell-18"><div class="snippet-head"><span>单元格 18</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 18" tabindex="0"><code><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span> <span class="o">=</span> <span class="n">data_X</span><span class="p">[:</span><span class="n">train_size</span><span class="p">],</span> <span class="n">data_X</span><span class="p">[</span><span class="n">train_size</span><span class="p">:]</span>
-<span class="n">train_Y</span><span class="p">,</span> <span class="n">test_Y</span> <span class="o">=</span> <span class="n">data_Y</span><span class="p">[:</span><span class="n">train_size</span><span class="p">],</span> <span class="n">data_Y</span><span class="p">[</span><span class="n">train_size</span><span class="p">:]</span></code></pre></div><div class="snippet" id="src-rnn-cell-20"><div class="snippet-head"><span>单元格 20</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 20" tabindex="0"><code><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span></code></pre></div><div class="snippet" id="src-rnn-cell-21"><div class="snippet-head"><span>单元格 21</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 21" tabindex="0"><code><span class="c1"># 保留 (时间步, 批次, 特征) 的数据表示，在模型中转为批次优先。</span>
+    <span class="k">return</span> <span class="n">windows</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">windows</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-16"><div class="snippet-head"><span>单元格 16</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 16"><code><span class="n">data_X</span><span class="p">,</span> <span class="n">data_Y</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-18"><div class="snippet-head"><span>单元格 18</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 18"><code><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span> <span class="o">=</span> <span class="n">data_X</span><span class="p">[:</span><span class="n">train_size</span><span class="p">],</span> <span class="n">data_X</span><span class="p">[</span><span class="n">train_size</span><span class="p">:]</span>
+<span class="n">train_Y</span><span class="p">,</span> <span class="n">test_Y</span> <span class="o">=</span> <span class="n">data_Y</span><span class="p">[:</span><span class="n">train_size</span><span class="p">],</span> <span class="n">data_Y</span><span class="p">[</span><span class="n">train_size</span><span class="p">:]</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-20"><div class="snippet-head"><span>单元格 20</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 20"><code><span class="n">train_X</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-21"><div class="snippet-head"><span>单元格 21</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 21"><code><span class="c1"># 保留 (时间步, 批次, 特征) 的数据表示，在模型中转为批次优先。</span>
 <span class="n">train1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">train_X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">step</span><span class="p">))</span>
 <span class="n">train2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">train_Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 <span class="n">test1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">test_X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">step</span><span class="p">))</span>
-<span class="n">test2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">test_Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></code></pre></div><div class="snippet" id="src-rnn-cell-22"><div class="snippet-head"><span>单元格 22</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 22" tabindex="0"><code><span class="n">train1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">train2</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">test1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">test2</span><span class="o">.</span><span class="n">shape</span></code></pre></div><div class="snippet" id="src-rnn-cell-24"><div class="snippet-head"><span>单元格 24</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 24" tabindex="0"><code><span class="k">class</span><span class="w"> </span><span class="nc">lstm_linear</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="n">test2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">test_Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-22"><div class="snippet-head"><span>单元格 22</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 22"><code><span class="n">train1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">train2</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">test1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">test2</span><span class="o">.</span><span class="n">shape</span></code></pre></div>
+<div class="book-notes"><h2>模型和训练 · 原单元 24–28</h2>
+<p>追踪一次前向传播。写出模型收到的序列长度、每步特征数和输出宽度。完整训练为 200 轮。</p>
+<details><summary>核对思路</summary>
+<p>外部输入遵循 (时间步, 批次, 特征)，在模型内转为 Keras 的批次优先顺序，输出再转回。</p>
+</details></div>
+<div class="snippet" id="src-rnn-cell-24"><div class="snippet-head"><span>单元格 24</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 24"><code><span class="k">class</span><span class="w"> </span><span class="nc">lstm_linear</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
@@ -3758,10 +3946,12 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
     <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">batch_first</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
         <span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">batch_first</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">hidden</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span></code></pre></div><div class="snippet" id="src-rnn-cell-26"><div class="snippet-head"><span>单元格 26</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 26" tabindex="0"><code><span class="n">net</span> <span class="o">=</span> <span class="n">lstm_linear</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="mi">45</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">hidden</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-26"><div class="snippet-head"><span>单元格 26</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 26"><code><span class="n">net</span> <span class="o">=</span> <span class="n">lstm_linear</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="mi">45</span><span class="p">)</span>
 
 <span class="n">criterion</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span></code></pre></div><div class="snippet" id="src-rnn-cell-28"><div class="snippet-head"><span>单元格 28</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 28" tabindex="0"><code><span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-28"><div class="snippet-head"><span>单元格 28</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 28"><code><span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">train_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">()</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">net</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
@@ -3773,20 +3963,31 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">):</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="n">train_step</span><span class="p">(</span><span class="n">train1</span><span class="p">,</span> <span class="n">train2</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">e</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Epoch: </span><span class="si">{</span><span class="n">e</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">, Loss: </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="si">:</span><span class="s1">.5f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></code></pre></div><div class="snippet" id="src-rnn-cell-30"><div class="snippet-head"><span>单元格 30</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 30" tabindex="0"><code><span class="c1"># 测试时调用模型并传入 training=False。</span></code></pre></div><div class="snippet" id="src-rnn-cell-31"><div class="snippet-head"><span>单元格 31</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 31" tabindex="0"><code><span class="n">test_predictions</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">test1</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Epoch: </span><span class="si">{</span><span class="n">e</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">, Loss: </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="si">:</span><span class="s1">.5f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></code></pre></div>
+<div class="book-notes"><h2>测试 · 原单元 30–36</h2>
+<p>先判断：若使用固定起点向后预测，第二个窗口的最后一点应取什么？再运行本例的滚动一步测试，核对预测、标签与上一观测长度。</p>
+<details><summary>核对思路</summary>
+<p>固定起点递归时使用第一步预测。本例使用此时已经观测到的真实值，269 个预测对应相同数量的标签。上一观测 MSE 约为 476672.15 人²。对 MSE 开方得到单位为人的 RMSE。</p>
+</details></div>
+<div class="snippet" id="src-rnn-cell-30"><div class="snippet-head"><span>单元格 30</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 30"><code><span class="c1"># 测试时调用模型并传入 training=False。</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-31"><div class="snippet-head"><span>单元格 31</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 31"><code><span class="n">test_predictions</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">test1</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">normalized_test_mse</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">criterion</span><span class="p">(</span><span class="n">test2</span><span class="p">,</span> <span class="n">test_predictions</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Normalized test MSE: </span><span class="si">{</span><span class="n">normalized_test_mse</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></code></pre></div><div class="snippet" id="src-rnn-cell-32"><div class="snippet-head"><span>单元格 32</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 32" tabindex="0"><code><span class="n">pred_test</span> <span class="o">=</span> <span class="n">test_predictions</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">+</span> <span class="n">min_value</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Normalized test MSE: </span><span class="si">{</span><span class="n">normalized_test_mse</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-32"><div class="snippet-head"><span>单元格 32</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 32"><code><span class="n">pred_test</span> <span class="o">=</span> <span class="n">test_predictions</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">+</span> <span class="n">min_value</span>
 <span class="n">true_test</span> <span class="o">=</span> <span class="n">raw_flow</span><span class="p">[</span><span class="n">train_size</span> <span class="o">+</span> <span class="n">step</span><span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-<span class="n">last_observed</span> <span class="o">=</span> <span class="n">raw_flow</span><span class="p">[</span><span class="n">train_size</span> <span class="o">+</span> <span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></code></pre></div><div class="snippet" id="src-rnn-cell-33"><div class="snippet-head"><span>单元格 33</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 33" tabindex="0"><code><span class="k">assert</span> <span class="n">pred_test</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">true_test</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">last_observed</span><span class="o">.</span><span class="n">shape</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Train windows: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train1</span><span class="p">)</span><span class="si">}</span><span class="s1">, test windows: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">test1</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></code></pre></div><div class="snippet" id="src-rnn-cell-34"><div class="snippet-head"><span>单元格 34</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 34" tabindex="0"><code><span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">pred_test</span> <span class="o">-</span> <span class="n">true_test</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">last_observed</span> <span class="o">=</span> <span class="n">raw_flow</span><span class="p">[</span><span class="n">train_size</span> <span class="o">+</span> <span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-33"><div class="snippet-head"><span>单元格 33</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 33"><code><span class="k">assert</span> <span class="n">pred_test</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">true_test</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">last_observed</span><span class="o">.</span><span class="n">shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Train windows: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train1</span><span class="p">)</span><span class="si">}</span><span class="s1">, test windows: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">test1</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-34"><div class="snippet-head"><span>单元格 34</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 34"><code><span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">pred_test</span> <span class="o">-</span> <span class="n">true_test</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse</span><span class="p">)</span>
 <span class="n">persistence_mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">last_observed</span> <span class="o">-</span> <span class="n">true_test</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Test MSE (people²): </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Test RMSE (people): </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Last observation MSE (people²): </span><span class="si">{</span><span class="n">persistence_mse</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></code></pre></div><div class="snippet" id="src-rnn-cell-36"><div class="snippet-head"><span>单元格 36</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 36" tabindex="0"><code><span class="c1"># 画出实际结果和预测的结果</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">true_test</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">'real'</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pred_test</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">'prediction'</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'best'</span><span class="p">)</span></code></pre></div></div></details>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Test MSE (people²): </span><span class="si">{</span><span class="n">mse</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Test RMSE (people): </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Last observation MSE (people²): </span><span class="si">{</span><span class="n">persistence_mse</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></code></pre></div>
+<div class="snippet" id="src-rnn-cell-36"><div class="snippet-head"><span>单元格 36</span><button class="copy" type="button" data-copy>复制</button></div><pre tabindex="0" aria-label="单元格 36"><code><span class="c1"># 画出实际结果和预测的结果</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">true_test</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;real&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pred_test</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;prediction&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span></code></pre></div></div></details>
 <details class="source-item" data-file-kind="notebook" data-filename="CNN.ipynb" data-group="notebook" id="src-cnn"><summary><span class="source-title">卷积神经网络 CNN</span><span class="source-meta">Notebook · 14 个代码单元格</span></summary><div class="source-body"><p class="source-path"><span>保存位置 <code>解压代码/人工智能基础3--卷积神经网络代码/人工智能基础3.3+卷积神经网络/CNN/CNN.ipynb</code></span> <button class="button" data-download="source" type="button">下载代码 Notebook</button></p><div class="snippet" id="src-cnn-cell-16"><div class="snippet-head"><span>单元格 16</span><button class="copy" data-copy="" type="button">复制</button></div><pre aria-label="单元格 16" tabindex="0"><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
@@ -6075,8 +6276,14 @@ pre code { white-space: inherit; font-size: .84rem; line-height: 1.55; tab-size:
 <a href="#overview">回到顶部 ↑</a>
 </footer>
 </main>
+<dialog id="book-dialog" aria-labelledby="book-label">
+<div class="book-search-top"><div class="book-search-label"><label for="book-query" id="book-label"><strong>搜索全书</strong></label><button class="button" type="button" id="book-close">关闭</button></div>
+<input type="search" id="book-query" placeholder="例如：固定起点、零客流 WMAPE、EarlyStopping" autocomplete="off">
+<p id="book-count" role="status">可搜索关键词、公式名称、课件页标题或函数名。</p></div>
+<ul id="book-results"></ul><button class="button" type="button" id="book-more" hidden>更多结果</button></dialog>
 </div>
 <div aria-live="polite" id="copy-status" role="status" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);"></div>
+<script type="application/json" id="guided-notebooks">{"src-rnn":{"cells":[{"cell_type":"markdown","id":"b3b542d5","metadata":{},"source":["# 单站客流的滚动一步预测\n","\n","在本 Notebook 所在目录运行，确认旁边有 LSTM.csv。学习目标是用已观测的五点历史预测下一点，并在原始人数尺度与上一观测基线比较。从上到下执行；下列编号与网页中的原代码单元对应。"]},{"cell_type":"markdown","id":"guide-5","metadata":{},"source":["## 数据 · 原单元 5–12\n","\n","读入 data 列后，检查有效观测数和字段。文件给出 900 条有序数值。能从这一列确认每条观测的日期和频率吗？\n","\n","\u003cdetails>\u003csummary>核对思路\u003c/summary>\n","\n","文件没有独立时间戳。按观测下标报告切分；缩放的极值只取自训练窗口覆盖的观测。\n","\n","\u003c/details>"]},{"cell_type":"code","execution_count":null,"id":"cell-5","metadata":{"course_cell_number":5},"outputs":[],"source":["%matplotlib inline\n","import tensorflow as tf\n","import numpy as np\n","import pandas as pd\n","import matplotlib.pyplot as plt\n","\n","tf.keras.utils.set_random_seed(42)"]},{"cell_type":"code","execution_count":null,"id":"cell-7","metadata":{"course_cell_number":7},"outputs":[],"source":["data_csv = pd.read_csv(\"./LSTM.csv\")\n","data_csv.head()"]},{"cell_type":"code","execution_count":null,"id":"cell-9","metadata":{"course_cell_number":9},"outputs":[],"source":["plt.plot(data_csv[0:200])"]},{"cell_type":"code","execution_count":null,"id":"cell-12","metadata":{"course_cell_number":12},"outputs":[],"source":["raw_flow = data_csv['data'].dropna().to_numpy(dtype=np.float32)\n","step = 5\n","train_size = int((len(raw_flow) - step) * 0.7)\n","if train_size \u003c 1 or train_size >= len(raw_flow) - step:\n","    raise ValueError('需要足够的数据以构造非空的训练集和测试集')\n","training_values = raw_flow[:train_size + step]\n","min_value = training_values.min()\n","max_value = training_values.max()\n","scale = max_value - min_value\n","if scale == 0:\n","    scale = np.float32(1.0)\n","dataset = (raw_flow - min_value) / scale"]},{"cell_type":"markdown","id":"guide-14","metadata":{},"source":["## 建窗 · 原单元 14–22\n","\n","画出前两个五点窗口，标出各自的目标。训练有 626 个窗口，第一个测试目标的零基下标是多少？先写下答案，再运行形状检查。\n","\n","\u003cdetails>\u003csummary>核对思路\u003c/summary>\n","\n","首个测试窗口读 626–630，标签是 631。测试张量 (269, 1, 5) 表示 269 个顺次到达的窗口、1 条序列、每步 5 个历史特征。\n","\n","\u003c/details>"]},{"cell_type":"code","execution_count":null,"id":"cell-14","metadata":{"course_cell_number":14},"outputs":[],"source":["def create_dataset(series, step):\n","    windows = np.lib.stride_tricks.sliding_window_view(series, step + 1)\n","    return windows[:, :-1].copy(), windows[:, -1].copy()"]},{"cell_type":"code","execution_count":null,"id":"cell-16","metadata":{"course_cell_number":16},"outputs":[],"source":["data_X, data_Y = create_dataset(dataset, step)"]},{"cell_type":"code","execution_count":null,"id":"cell-18","metadata":{"course_cell_number":18},"outputs":[],"source":["train_X, test_X = data_X[:train_size], data_X[train_size:]\n","train_Y, test_Y = data_Y[:train_size], data_Y[train_size:]"]},{"cell_type":"code","execution_count":null,"id":"cell-20","metadata":{"course_cell_number":20},"outputs":[],"source":["train_X.shape"]},{"cell_type":"code","execution_count":null,"id":"cell-21","metadata":{"course_cell_number":21},"outputs":[],"source":["# 保留 (时间步, 批次, 特征) 的数据表示，在模型中转为批次优先。\n","train1 = tf.convert_to_tensor(train_X.reshape(-1, 1, step))\n","train2 = tf.convert_to_tensor(train_Y.reshape(-1, 1, 1))\n","test1 = tf.convert_to_tensor(test_X.reshape(-1, 1, step))\n","test2 = tf.convert_to_tensor(test_Y.reshape(-1, 1, 1))"]},{"cell_type":"code","execution_count":null,"id":"cell-22","metadata":{"course_cell_number":22},"outputs":[],"source":["train1.shape, train2.shape, test1.shape, test2.shape"]},{"cell_type":"markdown","id":"guide-24","metadata":{},"source":["## 模型和训练 · 原单元 24–28\n","\n","追踪一次前向传播。写出模型收到的序列长度、每步特征数和输出宽度。完整训练为 200 轮。\n","\n","\u003cdetails>\u003csummary>核对思路\u003c/summary>\n","\n","外部输入遵循 (时间步, 批次, 特征)，在模型内转为 Keras 的批次优先顺序，输出再转回。\n","\n","\u003c/details>"]},{"cell_type":"code","execution_count":null,"id":"cell-24","metadata":{"course_cell_number":24},"outputs":[],"source":["class lstm_linear(tf.keras.Model):\n","    def __init__(self, input_size, hidden_size, output_size=1, num_layers=2):\n","        super().__init__()\n","        self.lstm = tf.keras.Sequential([\n","            tf.keras.layers.Input(shape=(None, input_size)),\n","            *[tf.keras.layers.LSTM(hidden_size, return_sequences=True) for _ in range(num_layers)],\n","        ])\n","        self.linear = tf.keras.layers.Dense(output_size)\n","\n","    def call(self, x, training=False):\n","        batch_first = tf.transpose(x, (1, 0, 2))\n","        hidden = self.lstm(batch_first, training=training)\n","        return tf.transpose(self.linear(hidden), (1, 0, 2))"]},{"cell_type":"code","execution_count":null,"id":"cell-26","metadata":{"course_cell_number":26},"outputs":[],"source":["net = lstm_linear(step, 45)\n","\n","criterion = tf.keras.losses.MeanSquaredError()\n","optimizer = tf.keras.optimizers.Adam(learning_rate=1e-2, epsilon=1e-8)"]},{"cell_type":"code","execution_count":null,"id":"cell-28","metadata":{"course_cell_number":28},"outputs":[],"source":["@tf.function\n","def train_step(inputs, targets):\n","    with tf.GradientTape() as tape:\n","        loss = criterion(targets, net(inputs, training=True))\n","    gradients = tape.gradient(loss, net.trainable_variables)\n","    optimizer.apply_gradients(zip(gradients, net.trainable_variables))\n","    return loss\n","\n","\n","for e in range(200):\n","    loss = train_step(train1, train2)\n","    if (e + 1) % 5 == 0:\n","        print(f'Epoch: {e + 1}, Loss: {float(loss):.5f}')"]},{"cell_type":"markdown","id":"guide-30","metadata":{},"source":["## 测试 · 原单元 30–36\n","\n","先判断：若使用固定起点向后预测，第二个窗口的最后一点应取什么？再运行本例的滚动一步测试，核对预测、标签与上一观测长度。\n","\n","\u003cdetails>\u003csummary>核对思路\u003c/summary>\n","\n","固定起点递归时使用第一步预测。本例使用此时已经观测到的真实值，269 个预测对应相同数量的标签。上一观测 MSE 约为 476672.15 人²。对 MSE 开方得到单位为人的 RMSE。\n","\n","\u003c/details>"]},{"cell_type":"code","execution_count":null,"id":"cell-30","metadata":{"course_cell_number":30},"outputs":[],"source":["# 测试时调用模型并传入 training=False。"]},{"cell_type":"code","execution_count":null,"id":"cell-31","metadata":{"course_cell_number":31},"outputs":[],"source":["test_predictions = net(test1, training=False)\n","normalized_test_mse = float(criterion(test2, test_predictions))\n","print(f'Normalized test MSE: {normalized_test_mse:.6f}')"]},{"cell_type":"code","execution_count":null,"id":"cell-32","metadata":{"course_cell_number":32},"outputs":[],"source":["pred_test = test_predictions.numpy().reshape(-1).astype(np.float64) * scale + min_value\n","true_test = raw_flow[train_size + step:].astype(np.float64)\n","last_observed = raw_flow[train_size + step - 1:-1].astype(np.float64)"]},{"cell_type":"code","execution_count":null,"id":"cell-33","metadata":{"course_cell_number":33},"outputs":[],"source":["assert pred_test.shape == true_test.shape == last_observed.shape\n","print(f'Train windows: {len(train1)}, test windows: {len(test1)}')"]},{"cell_type":"code","execution_count":null,"id":"cell-34","metadata":{"course_cell_number":34},"outputs":[],"source":["mse = np.mean((pred_test - true_test) ** 2)\n","rmse = np.sqrt(mse)\n","persistence_mse = np.mean((last_observed - true_test) ** 2)\n","print(f'Test MSE (people²): {mse:.6f}')\n","print(f'Test RMSE (people): {rmse:.6f}')\n","print(f'Last observation MSE (people²): {persistence_mse:.6f}')"]},{"cell_type":"code","execution_count":null,"id":"cell-36","metadata":{"course_cell_number":36},"outputs":[],"source":["# 画出实际结果和预测的结果\n","plt.plot(true_test,  label='real')\n","plt.plot(pred_test,label='prediction')\n","plt.legend(loc='best')"]}],"metadata":{"kernelspec":{"display_name":"Python (Traffic AI · TensorFlow)","language":"python","name":"traffic-ai-tensorflow"}},"nbformat":4,"nbformat_minor":5},"src-metro-study":{"cells":[{"cell_type":"markdown","id":"metro-title","metadata":{},"source":["# 地铁客流入门与误差复算\n","\n","在本文件所在的 subway flow prediction_for book 目录运行。全网基线只需 NumPy；参考预测由本版已保存的模型运行导出。完成后提交全网 MAE、RMSE，以及一个让两种指标排序不同的原因。"]},{"cell_type":"markdown","id":"metro-data","metadata":{},"source":["## 1 · 读数据（单元 1）\n","\n","打开 data/in_15min.csv。预测对象是下一运营时间片各站的进站人数。先猜一行代表什么，再检查形状。"]},{"cell_type":"code","id":"cell-1","metadata":{"course_cell_number":1},"execution_count":null,"outputs":[],"source":["from pathlib import Path\n","import csv\n","import json\n","import numpy as np\n","\n","data = Path(\"data\")\n","flow = np.loadtxt(data / \"in_15min.csv\", delimiter=\",\")\n","print(\"矩阵（站点，时间片）\", flow.shape)\n","assert flow.shape == (276, 1800)"]},{"cell_type":"markdown","id":"metro-window","metadata":{},"source":["## 2 · 从已知历史造基线（单元 2）\n","\n","用前一个已观测时间片预测下一片。若目标索引为 1440，可用的最后一列是哪一列？最后五个工作日能产生多少个站点与时间片组合？"]},{"cell_type":"code","id":"cell-2","metadata":{"course_cell_number":2},"execution_count":null,"outputs":[],"source":["actual = flow[:, 1440:1800]\n","previous = flow[:, 1439:1799]\n","error = previous - actual\n","mae = np.abs(error).mean()\n","rmse = np.sqrt((error ** 2).mean())\n","print(f\"{actual.size:,} 组，MAE {mae:.2f} 人，RMSE {rmse:.2f} 人\")\n","assert actual.shape == previous.shape == (276, 360)"]},{"cell_type":"markdown","id":"metro-check","metadata":{},"source":["\u003cdetails>\u003csummary>核对基线及运营日边界\u003c/summary>\n","\n","99,360 组，MAE 50.67 人，RMSE 101.02 人。1440 的上一列是 1439。每天 05:00 对应的上一列是前一收录工作日 22:45 开始的时间片，测试集有 5 个这样的日首目标。\n","\n","\u003c/details>"]},{"cell_type":"markdown","id":"metro-sample","metadata":{},"source":["## 3 · 从预测节选解释误差（单元 3–4）\n","\n","读取 data/参考预测_西直门.csv。本版节选固定为留出周首个工作日的西直门，72 行；两个模型用相同的真实值。先核对索引和站名，猜想平方误差与绝对误差会如何给模型排序。"]},{"cell_type":"code","id":"cell-3","metadata":{"course_cell_number":3},"execution_count":null,"outputs":[],"source":["with (data / \"参考预测_西直门.csv\").open(encoding=\"utf-8-sig\", newline=\"\") as stream:\n","    rows = list(csv.DictReader(stream))\n","info = json.loads((data / \"参考预测_说明.json\").read_text(encoding=\"utf-8\"))\n","targets = np.array([int(r[\"target_index\"]) for r in rows])\n","station = info[\"station_index_zero_based\"]\n","observed = np.array([float(r[\"actual\"]) for r in rows])\n","assert len(rows) == info[\"excerpt_elements\"] == 72\n","np.testing.assert_array_equal(targets, np.arange(1440, 1512))\n","np.testing.assert_array_equal(observed, flow[station, targets])\n","print(info[\"framework\"], rows[0][\"station\"], rows[0][\"slot_start\"], rows[-1][\"slot_start\"])"]},{"cell_type":"code","id":"cell-4","metadata":{"course_cell_number":4},"execution_count":null,"outputs":[],"source":["errors = {}\n","for field, label in info[\"fields\"].items():\n","    forecast = np.array([float(r[field]) for r in rows])\n","    errors[field] = forecast - observed\n","    mae = np.abs(errors[field]).mean()\n","    rmse = np.sqrt(np.mean(errors[field] ** 2))\n","    expected = info[\"excerpt_metrics\"][field]\n","    np.testing.assert_allclose([mae, rmse], [expected[\"mae\"], expected[\"rmse\"]])\n","    print(f\"{label}：MAE {mae:.2f} 人，RMSE {rmse:.2f} 人\")\n","\n","sq_gain = errors[\"previous\"] ** 2 - errors[\"dual\"] ** 2\n","abs_cost = np.abs(errors[\"dual\"]) - np.abs(errors[\"previous\"])\n","for label, values in [(\"平方误差改善最大\", sq_gain), (\"绝对误差增量最大\", abs_cost)]:\n","    i = int(np.argmax(values))\n","    print(label, rows[i][\"slot_start\"], \"真实人数\", observed[i], \"差值\", round(values[i], 2))"]},{"cell_type":"markdown","id":"metro-interpret","metadata":{},"source":["## 4 · 写下解释\n","\n","用单元 4 的两个时间片说明，大误差为何对 RMSE 贡献更大。节选的分母是 72；网页全网表的分母是 99,360。换站、换时段后需要重新计算。进一步练习：把全网基线改成上一收录工作日同时段，保持 1440–1799 的目标不动，再比较两个指标。"]}],"metadata":{"kernelspec":{"display_name":"Python (Traffic AI · TensorFlow)","language":"python","name":"traffic-ai-tensorflow"}},"nbformat":4,"nbformat_minor":5}}</script>
 <script type="application/json" id="slide-code-index">{
 "afc-index": [{"title":"把一条合成刷卡记录映射到站点编号和分钟","code":"station_index = {'A01': 0, 'B02': 1}\ntrip = {'entry_station': 'A01', 'exit_station': 'B02',\n        'entry_time': '07:46', 'exit_time': '08:01'}\n\ndef minute_of_day(clock):\n    hour, minute = map(int, clock.split(':'))\n    return hour * 60 + minute\n\nstart = minute_of_day(trip['entry_time'])\nend = minute_of_day(trip['exit_time'])\norigin = station_index[trip['entry_station']]\ndestination = station_index[trip['exit_station']]\nvalid = origin != destination and 0 \u003c= start \u003c end \u003c 1440\nprint('站对:', (origin, destination), '时刻:', (start, end))\nprint('有效:', valid, '时长:', end - start, '进站分箱:', start // 15)","expected":"站对: (0, 1) 时刻: (466, 481)\n有效: True 时长: 15 进站分箱: 31","language":"Python"}],
 "audit-afc-time": [{"title":"复算课件三个时刻对","code":"def minutes_since_opening(clock):\n    hour, minute, second = map(int, clock.split(':'))\n    return hour*60 + minute - 5*60\n\nrecords = [('19:09:00', '19:35:24'),\n           ('12:32:00', '12:46:06'),\n           ('11:56:00', '12:44:28')]\nfor entry, exit_time in records:\n    a, b = map(minutes_since_opening, (entry, exit_time))\n    print(f'{entry} → {exit_time}: {a} → {b}, 进站第 {a//15} 箱（从 0 起）')","expected":"19:09:00 → 19:35:24: 849 → 875, 进站第 56 箱（从 0 起）\n12:32:00 → 12:46:06: 452 → 466, 进站第 30 箱（从 0 起）\n11:56:00 → 12:44:28: 416 → 464, 进站第 27 箱（从 0 起）","language":"Python"}],
@@ -6341,10 +6548,141 @@ expand.addEventListener('click', () => {
   refreshExpand();
 });
 
-function focusSearch() {
-  document.getElementById('source').scrollIntoView();
-  search.focus({ preventScroll: true });
+const searchDialog = document.getElementById('book-dialog');
+const bookInput = document.getElementById('book-query');
+const resultList = document.getElementById('book-results');
+const resultStatus = document.getElementById('book-count');
+const moreResults = document.getElementById('book-more');
+const entrySelector = 'main > section[id], .slide-page[id], .lesson, .lab-panel, .card, .source-item, main > section > .tablebox';
+const searchBlocks = [...document.querySelectorAll(entrySelector)].filter(block => {
+  return block.id !== 'overview' && !block.closest('.source-item .snippet');
+});
+searchBlocks.forEach((block, index) => {
+  if (!block.id) block.id = 'reading-' + index;
+});
+let bookEntries;
+let matches = [];
+let shown = 0;
+let searchTrigger;
+
+function buildBookIndex() {
+  const entries = new Map(searchBlocks.map(block => {
+    const heading = block.querySelector(':scope > summary, :scope > h3, :scope > h4, :scope > .section-title h2, :scope > .slide-page-heading h5, :scope > h2, :scope > table caption');
+    const chapterName = block.closest('main > section')?.querySelector('h1,h2')?.textContent.trim() || '';
+    const pageNumber = /^slide-(?:python|model|rail)-(\d+)$/.exec(block.id);
+    const chapter = pageNumber ? chapterName + ' · 课件第 ' + pageNumber[1] + ' 页' : chapterName;
+    const title = block.querySelector(':scope > summary > .source-title')?.textContent ||
+      heading?.textContent.trim() || block.querySelector('thead th')?.textContent || chapter;
+    const kind = block.matches('.source-item') ? '代码' :
+      (block.matches('.slide-page, .lab-panel, #baseline') || block.querySelector(':scope > .question') ? '例题与讲义' : '讲解');
+    return [block, {id:block.id, title, chapter, kind, parts:[]}];
+  }));
+  const walker = document.createTreeWalker(document.querySelector('main'), NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    const part = node.textContent.trim();
+    if (!part || node.parentElement.closest('script,style,nav,button,svg,.source-controls')) continue;
+    const entry = entries.get(node.parentElement.closest(entrySelector));
+    if (entry) entry.parts.push(part);
+  }
+  for (const page of document.querySelectorAll('.slide-page[id]')) {
+    const entry = entries.get(page);
+    if (!entry) continue;
+    for (const panel of page.querySelectorAll('[data-steps]')) {
+      for (const key of panel.dataset.steps.trim().split(/\s+/)) {
+        for (const step of slideCodeIndex[key] || []) entry.parts.push(step.title, step.code || '', step.expected || '');
+      }
+    }
+  }
+  return [...entries.values()].filter(e => e.parts.length).map(e => {
+    const summary = e.parts.join(' ').replace(/\s+/g,' ').trim();
+    const haystack = (e.title + ' ' + summary).toLowerCase();
+    return {id:e.id, title:e.title, chapter:e.chapter, kind:e.kind, summary, haystack};
+  });
 }
+
+function appendMatches() {
+  const end = Math.min(shown + 25, matches.length);
+  const fragment = document.createDocumentFragment();
+  for (const {entry, position} of matches.slice(shown, end)) {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = '#' + entry.id;
+    a.textContent = entry.title;
+    const meta = document.createElement('small');
+    meta.textContent = entry.kind + ' · ' + entry.chapter;
+    const excerpt = document.createElement('p');
+    const start = Math.max(0, position - 22);
+    excerpt.textContent = (start ? '…' : '') + entry.summary.slice(start, start + 104);
+    li.append(meta, a, excerpt);
+    fragment.append(li);
+  }
+  resultList.append(fragment);
+  shown = end;
+  moreResults.hidden = shown >= matches.length;
+}
+
+function findInBook() {
+  const terms = bookInput.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  resultList.replaceChildren();
+  moreResults.hidden = true;
+  if (!terms.length) {
+    resultStatus.textContent = '可搜索关键词、公式名称、课件页标题或函数名。';
+    return;
+  }
+  bookEntries ??= buildBookIndex();
+  matches = [];
+  for (const entry of bookEntries) {
+    if (!terms.every(term => entry.haystack.includes(term))) continue;
+    const title = entry.title.toLowerCase();
+    const score = terms.filter(term => title.includes(term)).length * 10;
+    const position = Math.max(0, entry.summary.toLowerCase().indexOf(terms[0]));
+    matches.push({entry, score, position});
+  }
+  matches.sort((a,b) => b.score - a.score);
+  shown = 0;
+  resultStatus.textContent = matches.length ? '找到 ' + matches.length + ' 项' : '没有匹配项。试试较短的词，如“客流”或“窗口”。';
+  appendMatches();
+}
+function focusSearch() {
+  searchTrigger = document.activeElement;
+  if (!searchDialog.open) searchDialog.showModal();
+  bookInput.focus();
+  bookInput.select();
+}
+bookInput.addEventListener('input', findInBook);
+searchDialog.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    searchDialog.close();
+  }
+});
+moreResults.addEventListener('click', appendMatches);
+document.getElementById('book-close').addEventListener('click', () => searchDialog.close());
+searchDialog.addEventListener('click', event => {
+  if (event.target === searchDialog) {
+    const rect = searchDialog.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) searchDialog.close();
+  }
+});
+resultList.addEventListener('click', event => {
+  const link = event.target.closest('a');
+  if (!link) return;
+  searchTrigger = null;
+  searchDialog.close();
+  const target = document.getElementById(link.hash.slice(1));
+  if (target) requestAnimationFrame(() => {
+    revealSource();
+    target.setAttribute('tabindex', '-1');
+    target.focus({preventScroll:true});
+    target.scrollIntoView();
+  });
+});
+searchDialog.addEventListener('close', () => {
+  if (searchTrigger?.isConnected) searchTrigger.focus({preventScroll:true});
+  searchTrigger = null;
+});
+
 
 document.getElementById('find-source').addEventListener('click', event => {
   event.preventDefault();
@@ -6415,12 +6753,13 @@ function revealSource() {
     search.value = '';
     applyFilter();
   }
-  if (item) item.open = true;
-  const lab = target.closest('.lab-panel');
-  if (lab) lab.open = true;
-  const unit = target.closest(".slide-unit");
-  if (unit) unit.open = true;
-  if (item || lab || unit) requestAnimationFrame(() => target.scrollIntoView());
+  let details = target.closest('details');
+  const nested = Boolean(details);
+  while (details) {
+    details.open = true;
+    details = details.parentElement.closest('details');
+  }
+  if (nested) requestAnimationFrame(() => target.scrollIntoView());
 }
 
 window.addEventListener('hashchange', revealSource);
@@ -6518,6 +6857,8 @@ function saveDocument(contents, filename, mime) {
 }
 
 function toCourseNotebook(item) {
+  const guided = JSON.parse(document.getElementById('guided-notebooks').textContent)[item.id];
+  if (guided) return JSON.stringify(guided, null, 1) + '\n';
   const title = item.querySelector('.source-title').textContent;
   const cells = Array.from(item.querySelectorAll('.source-body .snippet')).map(snippet => {
     const original = Number(snippet.id.split('-').at(-1));
